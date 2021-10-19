@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "cobranca-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/cobranca/CobrancaWebPart.js",
+          "manifest": "./src/webparts/cobranca/CobrancaWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "CobrancaWebPartStrings": "lib/webparts/cobranca/loc/{locale}.js"
+  }
+}
