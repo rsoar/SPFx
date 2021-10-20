@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import styles from './Cobranca.module.scss';
 
-import { AddModal } from './AddModal/AddModal';
 
 import { sp } from "@pnp/sp";
 import "@pnp/sp/webs";
@@ -16,10 +15,12 @@ import { IDataClient } from '../../Interface/IDataClient';
 import { PropertyPaneSlider } from '@microsoft/sp-property-pane';
 import { ICobrancaProps } from './ICobrancaProps';
 import { IDataAdmin } from '../../Interface/IDataAdmin';
+import { IList } from '@pnp/sp/lists';
 
 function Cobranca (props: ICobrancaProps) {
 
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [deleteModal, setDeleteModal] = useState<boolean>(false);
   const [adminData, setAdminData] = useState<IDataAdmin>();
   const [listDataClient, setListDataClient] = useState<IDataClient[]>(null);
   const [client, setClient] = useState<IDataClient>({
@@ -45,10 +46,15 @@ function Cobranca (props: ICobrancaProps) {
       Motivo: client.Motivo,
       situacao: client.situacao
     });
+    loadData();
   }
 
-  const editClient = async () => {
-    console.log('edit')
+  const deleteClient = async (e: any) => {
+    const el = e.target;
+    const listItems: IList = await sp.web.lists.getByTitle("Cobranças");
+    listItems.items.getById(el.id).delete();
+    
+    loadData();
   }
 
   const clientRender = () => (
@@ -57,22 +63,27 @@ function Cobranca (props: ICobrancaProps) {
         <td>{dataClient.Title}</td>
         <td>{dataClient.Created}</td>
         <td>{dataClient.Motivo}</td>
-        <td>{dataClient.situacao}</td>
+        { dataClient.situacao === 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
       </tr>
     )) : []
   );
 
   const loading = listDataClient === null;
   
+  const defineValueInput = (e) => {
+    if(e.target.id === 'nameClient') setClient({...client, Title: e.target.value});
+    if(e.target.id === 'description') setClient({...client, Motivo: e.target.value});
+    if(e.target.id === 'statusClient') setClient({...client, situacao: e.target.value});
+  }
+
   const handleModal = (e: any) => {
     e.preventDefault(); 
     setShowAddModal(!showAddModal);
   }
 
-  const defineValueInput = (e) => {
-    if(e.target.id === 'nameClient') setClient({...client, Title: e.target.value});
-    if(e.target.id === 'description') setClient({...client, Motivo: e.target.value});
-    if(e.target.id === 'statusClient') setClient({...client, situacao: e.target.value});
+  const handleDeleteModal = (e: any) => {
+    e.preventDefault();
+    setDeleteModal(!deleteModal)
   }
   
   
@@ -95,9 +106,9 @@ function Cobranca (props: ICobrancaProps) {
       </div>
       <main>
         <div className={styles.category}>
-          <a href="#" onClick={(e) => handleModal(e)}>Adicionar</a>
+          <a href="#" onClick={handleModal}>Adicionar</a>
           <a href="#">Editar</a>
-          <a href="#">Excluir</a>
+          <a href="#" onClick={handleDeleteModal}>Excluir</a>
           <a href="#">Lorem</a>
         </div>
         <section className={styles.dataBox}>
@@ -120,6 +131,29 @@ function Cobranca (props: ICobrancaProps) {
           {clientRender()}
         </table>
         }
+        { deleteModal ? 
+        <div className={styles.modalBackground}>
+          <div className={styles.modalContent}>
+            <table>
+              <th>Nome do cliente</th>
+              <th>Data e hora do envio</th>
+              <th>Motivo do contato</th>
+              <th>Situação</th>
+            </table>
+            { listDataClient.map(item => (
+              <div className={styles.dataModal}>
+                <div>
+                  <span>{item.Title}</span>
+                  <span>{item.Created}</span>
+                  <span>{item.Motivo}</span>
+                  <span>{item.situacao}</span>
+                </div>
+                <button id={`${item.Id}`} onClick={deleteClient}>X</button>
+              </div>
+            )) }
+          </div>
+        </div> 
+        : deleteModal }
         { showAddModal ? 
         <div className={styles.modalBackground}>
           <div className={styles.modalContent}>
@@ -128,10 +162,10 @@ function Cobranca (props: ICobrancaProps) {
             <label>Nome Completo do cliente</label>
             <input id="nameClient" type="text" placeholder="Digite o nome completo do cliente" value={client.Title} onChange={defineValueInput} />
             <label htmlFor="">Motivo:</label>
-            <input id="description" type="text" placeholder="Motivo do atendimento" onChange={defineValueInput} />
+            <input id="description" type="text" placeholder="Motivo do atendimento" value={client.Motivo} onChange={defineValueInput} />
             <select name="statusClient" id="statusClient" onChange={defineValueInput}>
               <option value="Aberto">Em aberto</option>
-              <option value="Respondido">Respondido</option>
+              <option value="Finalizado">Finalizado</option>
             </select>
             <button onClick={addCliente}>Adicionar</button>
           </div>

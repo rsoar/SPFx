@@ -1,4 +1,5 @@
 export interface IDataClient {
+  Id?: number;
   Title: string;
   Motivo: string;
   situacao: string;

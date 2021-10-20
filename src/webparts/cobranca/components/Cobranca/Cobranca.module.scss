@@ -118,7 +118,6 @@ table {
 tr {
   width: 25%;
   text-align: center;
-  border: 1px solid green;
   
   td {
     padding: 4px 0px;
@@ -148,7 +147,22 @@ tr {
   display: flex;
   flex-direction: column;
   padding: 30px;
-  margin: 0 auto;
+  margin: 0px auto;
+
+  th {
+    font-size: 1.6rem;
+    color: rgb(66, 66, 66);
+    padding: 3px 8px;
+  }
+  tr {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    td {
+      width: 25%;
+    }
+  }
 }
 .loadbox {
   width: 100%;
@@ -165,6 +179,43 @@ tr {
       border-radius: 50%;
     }
 
+}
+
+.dataModal {
+  display: flex;
+  position: relative;
+  align-items: center;
+
+  div {
+    width: 100%;
+    display: flex;
+    text-align: center;
+
+    span {
+      display: block;
+      width: 25%;
+      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.4rem;
+      padding: 3px 8px;
+    }
+    
+    
+  }
+
+  button {
+    position: absolute;
+    left: -25px;
+    padding: 4px;
+  }
+}
+
+.statusPending {
+  color: red;
+}
+.statusFinish {
+  color: rgb(41, 189, 41);
 }
 
 @keyframes rotateLoading {
