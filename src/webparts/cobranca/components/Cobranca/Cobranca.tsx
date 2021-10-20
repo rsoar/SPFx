@@ -8,13 +8,19 @@ import { sp } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
+import "@pnp/sp/site-users";
 
 import { IItemAddResult } from "@pnp/sp/items";
 import { IDataClient } from '../../Interface/IDataClient';
 
-function Cobranca () {
+import { PropertyPaneSlider } from '@microsoft/sp-property-pane';
+import { ICobrancaProps } from './ICobrancaProps';
+import { IDataAdmin } from '../../Interface/IDataAdmin';
+
+function Cobranca (props: ICobrancaProps) {
 
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [adminData, setAdminData] = useState<IDataAdmin>();
   const [listDataClient, setListDataClient] = useState<IDataClient[]>(null);
   const [client, setClient] = useState<IDataClient>({
     Title: '',
@@ -23,49 +29,60 @@ function Cobranca () {
   });
 
   useEffect(() => {
-    loadData();
-  })
+    setTimeout(loadData, 2500)
+  }, [])
 
   const loadData = async () => {
-    const allItems: any[] = await sp.web.lists.getByTitle("Cobranças").items.get();
-    const dataClient = allItems.map(item => item)
-    setListDataClient(dataClient);
+    const allItemsUser: IDataClient[] = await sp.web.lists.getByTitle('Cobranças').items.get();
+    const userAdmin = props.context.pageContext.user;
+    setAdminData(userAdmin);
+    setListDataClient(allItemsUser);
+    console.log(allItemsUser);
   }
+  
+  const addCliente = async () => {
+    const newClient: IItemAddResult = await sp.web.lists.getByTitle("Cobranças").items.add({
+      Title: client.Title,
+      Motivo: client.Motivo,
+      situacao: client.situacao
+    });
+  }
+
+  const editClient = async () => {
+    console.log('edit')
+  }
+
+  const clientRender = () => (
+    listDataClient !== null ? listDataClient.map(dataClient => (
+      <tr>
+        <td>{dataClient.Title}</td>
+        <td>{dataClient.Created}</td>
+        <td>{dataClient.Motivo}</td>
+        <td>{dataClient.situacao}</td>
+      </tr>
+    )) : []
+  );
 
   const loading = listDataClient === null;
-
-  const addClient = async () => {
-    const registered: IItemAddResult = await sp.web.lists.getByTitle("Cobranças").items.add(client);
-    console.log(registered);
-  }
-
-  const getDataForm = (e) => {
-    const el: HTMLInputElement = e.target.value
-    if(el.id == 'nameClient') setClient({...client, Title: el.value});
-    if(el.id == 'description') setClient({...client, Motivo: el.value});
-  }
   
   const handleModal = (e: any) => {
     e.preventDefault(); 
     setShowAddModal(!showAddModal);
   }
+
+  const defineValueInput = (e) => {
+    if(e.target.id === 'nameClient') setClient({...client, Title: e.target.value});
+    if(e.target.id === 'description') setClient({...client, Motivo: e.target.value});
+    if(e.target.id === 'statusClient') setClient({...client, situacao: e.target.value})
+  }
   
-  const renderClient = () => (
-    listDataClient ? listDataClient.map(dataClient => (
-      <tr>
-        <td>{dataClient.Title}</td>
-        <td>{dataClient.Motivo}</td>
-        <td>{dataClient.situacao}</td>
-      </tr>
-    )) : []
-  )
   
   return (
     <div className={styles.bgContainer}>
       <header>
         <h3>Detalhes do contato</h3>
         <div>
-          <img src="http://cdn.onlinewebfonts.com/svg/img_81837.png" className={styles.iconAdmin} />
+          { adminData ? <img className={styles.iconAdmin} src={`/_vti_bin/DelveApi.ashx/people/profileimage?size=S&userId=${adminData.email}`} alt="admin-icon" /> : <span>calma</span> }
           <span>Administrador</span>
         </div>
       </header>
@@ -93,16 +110,33 @@ function Cobranca () {
             <button>Últimos clientes</button>
           </div>
         </div>
-        <table>
+          {loading ? <div className={styles.loadbox}><div className={styles.loading}></div></div> : 
+          <table>
           <tr>
             <th>Nome do cliente</th>
             <th>Data e hora do envio</th>
             <th>Motivo do contato</th>
             <th>Situação</th>
           </tr>
-          { loading == null ? <div className={styles.loading}></div> : renderClient() }
+          {clientRender()}
         </table>
-        { showAddModal ? < AddModal handleAddModal={handleModal} addClient={addClient} getDataForm={getDataForm} dataClient={client}/> : showAddModal }
+        }
+        { showAddModal ? 
+        <div className={styles.modalBackground}>
+          <div className={styles.modalContent}>
+            <button onClick={handleModal}>X</button>
+            <h1>Adicionar novo cliente</h1>
+            <label>Nome Completo do cliente</label>
+            <input id="nameClient" type="text" placeholder="Digite o nome completo do cliente" value={client.Title} onChange={defineValueInput} />
+            <label htmlFor="">Motivo:</label>
+            <input id="description" type="text" placeholder="Motivo do atendimento" onChange={defineValueInput} />
+            <select name="statusClient" id="statusClient" onChange={defineValueInput}>
+              <option value="Aberto">Em aberto</option>
+              <option value="Respondido">Respondido</option>
+            </select>
+            <button onClick={addCliente}>Adicionar</button>
+          </div>
+        </div> : showAddModal }
       </main>
     </div>
   )
