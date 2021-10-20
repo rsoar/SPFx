@@ -29,7 +29,7 @@ function Cobranca (props: ICobrancaProps) {
   });
 
   useEffect(() => {
-    setTimeout(loadData, 2500)
+    loadData();
   }, [])
 
   const loadData = async () => {
@@ -37,7 +37,6 @@ function Cobranca (props: ICobrancaProps) {
     const userAdmin = props.context.pageContext.user;
     setAdminData(userAdmin);
     setListDataClient(allItemsUser);
-    console.log(allItemsUser);
   }
   
   const addCliente = async () => {
@@ -73,7 +72,7 @@ function Cobranca (props: ICobrancaProps) {
   const defineValueInput = (e) => {
     if(e.target.id === 'nameClient') setClient({...client, Title: e.target.value});
     if(e.target.id === 'description') setClient({...client, Motivo: e.target.value});
-    if(e.target.id === 'statusClient') setClient({...client, situacao: e.target.value})
+    if(e.target.id === 'statusClient') setClient({...client, situacao: e.target.value});
   }
   
   
