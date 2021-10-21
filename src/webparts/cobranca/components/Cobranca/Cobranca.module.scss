@@ -50,7 +50,7 @@ header {
   text-align: center;
 
   a {
-    border-bottom: 2px solid $text-color;
+    border-bottom: 2px solid #fff;
     padding: 10px 30px;
     width: 20%;
     text-decoration: none;
@@ -58,9 +58,14 @@ header {
     font-weight: bold;
     font-size: 1.3rem;
   }
+  a:hover {
+    border-bottom: 2px solid $text-color;
+  }
   
 }
-
+button {
+  cursor: pointer;
+}
 .dataBox {
   width: 100%;
   height: 150px;
@@ -83,8 +88,12 @@ header {
     font-size: 1.8rem;
     color: $text-color;
   }
+  label {
+    font-size: 1.1rem;
+    margin-left: 10px;
+  }
   select {
-    margin-left: 20px;
+    margin-left: 5px;
     padding: 6px;
   }
   select>option {
@@ -137,7 +146,9 @@ tr {
   left: 0;
   width: 100vw;
   height: 100vh;
-
+  // display: flex;
+  // justify-content: center;
+  // align-items: center;
 }
 
 .modalContent{
@@ -148,36 +159,60 @@ tr {
   display: flex;
   flex-direction: column;
   padding: 30px;
-  margin: 0px auto;
+  font-size: 1.8rem;
+  margin: 25px;
+
+  h1{
+    text-align: center;
+    font-size: 1.6rem;
+    padding: 10px 0px;
+  }
+  label, input, select, option{
+    font-size: 1.3rem;
+  }
+
+  input, select { 
+    margin: 2px 0px 10px;
+  }
+
+  .addButton {
+    margin-top: 10px;
+    background-color: #007FFF;
+    color: #fff;
+    border: none;
+    padding: 8px 0px;
+    border-radius: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
 
   .closeModal {
     position: absolute;
-    padding: 5px;
+    padding: 4px 8px;
     border-radius: 8px;
     right: 0;
     top: 0;
+    border: none;
+    background-color: red;
+    font-weight: bold;
+    color: #fff;
+    font-size: 1.4rem;
   }
 
-  th {
-    font-size: 1.6rem;
-    color: $text-color;
-    padding: 3px 8px;
-  }
-  tr {
+  .modalContentContainer {
+    border: 2px solid yellow;
     width: 100%;
     display: flex;
-    justify-content: space-between;
-
-    td {
-      width: 25%;
-    }
   }
+  
 }
+
 .loadbox {
   width: 100%;
   display: flex;
   justify-content: center;
   background-color: #fff;
+  padding: 30px 0px;
 
     .loading {
       border: 1px solid $text-color;
@@ -194,13 +229,16 @@ tr {
   display: flex;
   position: relative;
   align-items: center;
-
+  border: 1px solid green;
+  
   div {
+    border: 1px solid red;
     width: 100%;
     display: flex;
     text-align: center;
-
+    
     span {
+      border: 1px solid yellow;
       display: block;
       width: 25%;
       text-align: center;
@@ -231,5 +269,17 @@ tr {
 @keyframes rotateLoading {
   to {
     transform: rotate(1turn);
+  }
+}
+
+.paginationBtn {
+  width: 100%;
+  padding: 10px 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  button {
+    margin-right: 5px;
   }
 }
