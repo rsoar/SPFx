@@ -54,7 +54,7 @@ function Cobranca (props: ICobrancaProps) {
 
   const loadData = async () => {
     const userAdmin = props.context.pageContext.user;
-    const page: PagedItemCollection<IDataClient[]> = await sp.web.lists.getByTitle('Cobranças').items.top(5).getPaged();
+    const page: PagedItemCollection<IDataClient[]> = await sp.web.lists.getByTitle('Cobranças').items.top(20).getPaged();
     
     setAdminData(userAdmin);
     setListDataClient(page.results);
@@ -82,7 +82,7 @@ function Cobranca (props: ICobrancaProps) {
   }
 
   const addCliente = async () => {
-    console.log(client);
+    if (client.Title == '' || client.Motivo == '' || client.situacao == '' ) return alert('Insira os dados do cliente');
     const newClient: IItemAddResult = await sp.web.lists.getByTitle("Cobranças").items.add({
       Title: client.Title,
       Motivo: client.Motivo,
@@ -142,7 +142,6 @@ function Cobranca (props: ICobrancaProps) {
 
   const filterClient = async (e) => {
     const el = e.target;
-    setSearch(el.value);
     if(el.id == 'filter') setFilter(el.value)
     if(filter == 'Nome') {
       const filtered = listDataClient.filter(data => data.Title.toLowerCase().includes(el.value.toLowerCase()));
