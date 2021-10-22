@@ -50,11 +50,12 @@ function Cobranca (props: ICobrancaProps) {
   
   useEffect(() => {
     loadData();
+    setSearch('');
   }, [filter]);
 
   const loadData = async () => {
     const userAdmin = props.context.pageContext.user;
-    const page: PagedItemCollection<IDataClient[]> = await sp.web.lists.getByTitle('Cobranças').items.top(20).getPaged();
+    const page: PagedItemCollection<IDataClient[]> = await sp.web.lists.getByTitle('Cobranças').items.top(6).getPaged();
     
     setAdminData(userAdmin);
     setListDataClient(page.results);
@@ -142,7 +143,8 @@ function Cobranca (props: ICobrancaProps) {
 
   const filterClient = async (e) => {
     const el = e.target;
-    if(el.id == 'filter') setFilter(el.value)
+    setSearch(el.value);
+    if(el.id == 'filter') setFilter(el.value);
     if(filter == 'Nome') {
       const filtered = listDataClient.filter(data => data.Title.toLowerCase().includes(el.value.toLowerCase()));
       setUnfilteredClients(filtered);
@@ -187,7 +189,7 @@ function Cobranca (props: ICobrancaProps) {
         <div className={styles.infoHeader}>
           <h2>Lista de clientes</h2>
           <div>
-            <input id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={filterClient} />
+            <input id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={filterClient} value={search} />
             <label>Procurar por:</label>
             <select name="filter" id="filter" onChange={filterClient}>
               <option id="name">Nome</option>
@@ -212,10 +214,8 @@ function Cobranca (props: ICobrancaProps) {
         }
         {/* Modal add */}
         { showAddModal ? < Add client={client} handleModal={handleModal} defineValueInput={defineValueInput} addClient={addCliente} /> : showAddModal }
-        
         {/* Modal delete */}
         { deleteModal ? < Modal listDataClient={listDataClient} dateFormatMethod={dateFormat} deleteClientMethod={deleteClient} handleModal={handleDeleteModal}  currentPage={currentPage} prevPage={prevPage} loadMore={loadMore} action={action} editClientMethod={editClient}/> : deleteModal }
-
         {/* Modal edit */}
         { editModal ? < Modal listDataClient={listDataClient} dateFormatMethod={dateFormat} deleteClientMethod={deleteClient} handleModal={handleEditModal} currentPage={currentPage} prevPage={prevPage} loadMore={loadMore} action={action} editClientMethod={editClient}/> : editModal }
       </main>
