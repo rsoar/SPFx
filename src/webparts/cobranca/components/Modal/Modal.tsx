@@ -1,5 +1,6 @@
 import { PagedItemCollection } from '@pnp/sp/items';
 import * as React from 'react';
+import { useEffect } from 'react';
 import { IDataClient } from '../../Interface/IDataClient';
 
 import styles from './Modal.module.scss';
@@ -10,13 +11,18 @@ interface IProps {
   deleteClientMethod: (id: number) => void;
   editClientMethod: (e: any, item: IDataClient) => void;
   handleModal: () => void; 
-  currentPage: PagedItemCollection<IDataClient[]>;
-  prevPage: () => void;
-  loadMore: () => void;
   action: string;
+  pageSize: number;
+  currentPage: number;
+  pages: number;
+  loadMoreMethod: (e: any) => void;
 }
 
-export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, handleModal, currentPage, prevPage, loadMore, action, editClientMethod}: IProps) => {
+export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, handleModal, action, editClientMethod, pages, pageSize, currentPage, loadMoreMethod}: IProps) => {
+  useEffect(() => {
+    console.log(pageSize);
+    console.log(currentPage);
+  })
   return (
     <div className={styles.modalBackground}>
       <div className={styles.modalContent}>
@@ -29,7 +35,7 @@ export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, han
             <th>Situação</th>
             <th>Ação</th>
           </tr>
-          { listDataClient.map(item => (
+          { listDataClient.slice(currentPage * pageSize, currentPage + pageSize).map(item => (
             <tr>
               <td>{item.Title}</td>
               <td>{dateFormatMethod(item.Created)}</td>
@@ -42,13 +48,13 @@ export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, han
               </select> }
             </tr>
               )) }
-              { currentPage !== null && currentPage.hasNext ? <div className={styles.paginationBtn}>
-              <button onClick={prevPage}>Voltar</button>
-              <button onClick={loadMore}>Avançar</button>
-            </div> : <div className={styles.paginationBtn}>
-              <button onClick={prevPage}>Voltar</button>
-              <button onClick={loadMore} disabled>Avançar</button>
-            </div> }
+            <div>
+              {Array.from(Array(pages), (item, index) => (
+                <div>
+                  <button value={index} onClick={(e) => loadMoreMethod(e)}>{index}</button>
+                </div>
+              ))}
+            </div>
         </table>
       </div>
     </div>

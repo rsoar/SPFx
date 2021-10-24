@@ -23,10 +23,6 @@ import { Add } from '../Modal/Add/Add';
 
 function Cobranca (props: ICobrancaProps) {
 
-  const [prevClients, setPrevClients] = useState<IDataClient[]>(null);
-  const [previousPage, setPreviousPage] = useState<PagedItemCollection<IDataClient[]>>(null)
-  const [currentPage, setCurrentPage] = useState<PagedItemCollection<IDataClient[]>>(null);
-  
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
   const [editModal, setEditModal] = useState<boolean>(false);
@@ -35,14 +31,18 @@ function Cobranca (props: ICobrancaProps) {
   const [filter, setFilter] = useState<string>('Nome');
   
   const [adminData, setAdminData] = useState<IDataAdmin>();
-  const [listDataClient, setListDataClient] = useState<IDataClient[]>(null);
-  const [unfilteredClients, setUnfilteredClients] = useState<IDataClient[]>(null);
-  const [search, setSearch] = useState<string>();
+  const [listDataClient, setListDataClient] = useState<IDataClient[]>([]);
+  const [unfilteredClients, setUnfilteredClients] = useState<IDataClient[]>([]);
   const [client, setClient] = useState<IDataClient>({
     Title: '',
     Motivo: '',
     situacao: '',
   });
+
+  /* states paginacao */
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(6);
+  const pages = Math.ceil(unfilteredClients.length/pageSize);
 
   useEffect(() => {
     loadData();
@@ -50,37 +50,20 @@ function Cobranca (props: ICobrancaProps) {
   
   useEffect(() => {
     loadData();
-    setSearch('');
+    const campoBusca: HTMLInputElement = document.getElementById('searchInput') as HTMLInputElement;
+    campoBusca.value = ''
   }, [filter]);
 
   const loadData = async () => {
     const userAdmin = props.context.pageContext.user;
-    const page: PagedItemCollection<IDataClient[]> = await sp.web.lists.getByTitle('Cobranças').items.top(6).getPaged();
+    const allItems: IDataClient[] = await sp.web.lists.getByTitle("Cobranças").items.get();
     
     setAdminData(userAdmin);
-    setListDataClient(page.results);
-    setUnfilteredClients(page.results);
-    setCurrentPage(page);
+    setListDataClient(allItems);
+    setUnfilteredClients(allItems);
   }
-  
-  const loadMore = async () => {
-    const nextPage = await currentPage.getNext()
-    
-    /* seta a pagina anterior como pagina atual */
-    setPreviousPage(currentPage);
-    setPrevClients(currentPage.results);
 
-    /* seta a pagina atual como pagina seguinte */
-    setCurrentPage(nextPage);
-    setListDataClient(nextPage.results);
-    setUnfilteredClients(nextPage.results);
-  }
-  
-  const prevPage = async () => {
-    setCurrentPage(previousPage); 
-    setListDataClient(prevClients);
-    setUnfilteredClients(prevClients);
-  }
+  const loadMore = (e: any) => setCurrentPage(e.target.value);
 
   const addCliente = async () => {
     if (client.Title == '' || client.Motivo == '' || client.situacao == '' ) return alert('Insira os dados do cliente');
@@ -106,14 +89,14 @@ function Cobranca (props: ICobrancaProps) {
   }
   
   const clientRender = () => (
-    unfilteredClients !== null ? unfilteredClients.map(dataClient => (
+    unfilteredClients !== null ? unfilteredClients.slice(currentPage * pageSize, currentPage + pageSize).map(dataClient => (
       <tr>
         <td>{dataClient.Title}</td>
         <td>{dateFormat(dataClient.Created)}</td>
         <td>{dataClient.Motivo}</td>
         { dataClient.situacao == 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
       </tr>
-    )) : []
+    )) : [] 
   );
 
   const loading = unfilteredClients === null;
@@ -124,13 +107,10 @@ function Cobranca (props: ICobrancaProps) {
     return dateFormated;
   }
   
-  const defineValueInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if(e.target.id == 'nameClient') setClient({...client, Title: e.target.value});
-    if(e.target.id == 'description') setClient({...client, Motivo: e.target.value});
-    if(e.target.id == 'statusClient') setClient({...client, situacao: e.target.value});
-  }
+  const defineValueInput = (e: React.ChangeEvent<HTMLInputElement>) => setClient({ ...client, [e.target.name]: e.target.value });
 
   const handleModal = () => setShowAddModal(!showAddModal);
+
   const handleDeleteModal = () => {
     setAction('delete');
     setDeleteModal(!deleteModal);
@@ -142,32 +122,20 @@ function Cobranca (props: ICobrancaProps) {
   }
 
   const filterClient = async (e) => {
-    const el = e.target;
-    setSearch(el.value);
-    if(el.id == 'filter') setFilter(el.value);
-    if(filter == 'Nome') {
-      const filtered = listDataClient.filter(data => data.Title.toLowerCase().includes(el.value.toLowerCase()));
-      setUnfilteredClients(filtered);
-    } else if(filter == 'Motivo') {
-      const filtered = listDataClient.filter(data => data.Motivo.toLowerCase().includes(el.value.toLowerCase()));
-      setUnfilteredClients(filtered);
-    } else if (filter == 'Data') {
-      const filtered = listDataClient.filter(data => data.Created.includes(el.value));
-      setUnfilteredClients(filtered);
+    if(e.target.id == 'filter') setFilter(e.target.value);
+
+    switch (filter) {
+      case 'Nome':
+        setUnfilteredClients(listDataClient.filter(data => data.Title.toLowerCase().includes(e.target.value.toLowerCase())));
+        break
+      case 'Motivo': 
+        setUnfilteredClients(listDataClient.filter(data => data.Motivo.toLowerCase().includes(e.target.value.toLowerCase())))
+        break
+      case 'Data': 
+        setUnfilteredClients(listDataClient.filter(data => data.Created.toLowerCase().includes(e.target.value.toLowerCase())))
+        break
     }
   }
-
-  const renderPagination = () => (
-    currentPage !== null && currentPage.hasNext ?
-        <div className={styles.paginationBtn}>
-          { previousPage == null ? <button onClick={prevPage} disabled>Voltar</button> : <button onClick={prevPage}>Voltar</button>}
-          <button onClick={loadMore}>Avançar</button>
-        </div>
-      : <div className={styles.paginationBtn}>
-          <button onClick={prevPage}>Voltar</button>
-          <button onClick={loadMore} disabled>Avançar</button>
-        </div> 
-  )
 
   return (
     <div className={styles.bgContainer}>
@@ -189,7 +157,7 @@ function Cobranca (props: ICobrancaProps) {
         <div className={styles.infoHeader}>
           <h2>Lista de clientes</h2>
           <div>
-            <input id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={filterClient} value={search} />
+            <input id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={filterClient}/>
             <label>Procurar por:</label>
             <select name="filter" id="filter" onChange={filterClient}>
               <option id="name">Nome</option>
@@ -208,16 +176,22 @@ function Cobranca (props: ICobrancaProps) {
                 <th>Situação</th>
               </tr>
             {clientRender()}
+          <div className={styles.paginationContainer}>
+            { Array.from(Array(pages), (item, index) => (
+              <div>
+                <button className={styles.paginationButtons} value={index} onClick={(e) => loadMore(e)}>{index}</button>
+              </div>
+            )) }
+          </div>
           </table>
-          { !search && renderPagination()}
           </>
         }
         {/* Modal add */}
         { showAddModal ? < Add client={client} handleModal={handleModal} defineValueInput={defineValueInput} addClient={addCliente} /> : showAddModal }
         {/* Modal delete */}
-        { deleteModal ? < Modal listDataClient={listDataClient} dateFormatMethod={dateFormat} deleteClientMethod={deleteClient} handleModal={handleDeleteModal}  currentPage={currentPage} prevPage={prevPage} loadMore={loadMore} action={action} editClientMethod={editClient}/> : deleteModal }
+        { deleteModal ? < Modal pages={pages} pageSize={pageSize} currentPage={currentPage} loadMoreMethod={loadMore} listDataClient={listDataClient} dateFormatMethod={dateFormat} deleteClientMethod={deleteClient} handleModal={handleDeleteModal}  action={action} editClientMethod={editClient}/> : deleteModal }
         {/* Modal edit */}
-        { editModal ? < Modal listDataClient={listDataClient} dateFormatMethod={dateFormat} deleteClientMethod={deleteClient} handleModal={handleEditModal} currentPage={currentPage} prevPage={prevPage} loadMore={loadMore} action={action} editClientMethod={editClient}/> : editModal }
+        { editModal ? < Modal pages={pages} pageSize={pageSize} currentPage={currentPage} loadMoreMethod={loadMore} listDataClient={listDataClient} dateFormatMethod={dateFormat} deleteClientMethod={deleteClient} handleModal={handleEditModal} action={action} editClientMethod={editClient}/> : editModal }
       </main>
     </div>
   )
