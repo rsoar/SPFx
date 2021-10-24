@@ -1,5 +1,5 @@
 
-## 🔍 About
+## 🔍 Sobre
 Projeto desenvolvido afim de por em prática conceitos de React no SharePoint. <br/>
 O projeto consiste em um painel de administrador que tem como objetivo monitorar os clientes registrados e sua situação no sistema
 
