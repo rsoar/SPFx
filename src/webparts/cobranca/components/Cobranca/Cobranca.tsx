@@ -39,11 +39,12 @@ function Cobranca (props: ICobrancaProps) {
     situacao: '',
   });
 
+
   /* states paginacao */
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(6);
   const pages = Math.ceil(unfilteredClients.length/pageSize);
-
+  
   useEffect(() => {
     loadData();
   }, []);
@@ -73,6 +74,7 @@ function Cobranca (props: ICobrancaProps) {
       situacao: client.situacao
     });
     loadData();
+    setClient({...client, Title: '', Motivo: ''})
   }
 
   const deleteClient = async (id: number) => {
@@ -89,7 +91,7 @@ function Cobranca (props: ICobrancaProps) {
   }
   
   const clientRender = () => (
-    unfilteredClients !== null ? unfilteredClients.slice(currentPage * pageSize, currentPage + pageSize).map(dataClient => (
+    unfilteredClients !== null ? unfilteredClients.slice(currentPage * pageSize, currentPage * pageSize + pageSize).map(dataClient => (
       <tr>
         <td>{dataClient.Title}</td>
         <td>{dateFormat(dataClient.Created)}</td>
@@ -157,7 +159,7 @@ function Cobranca (props: ICobrancaProps) {
         <div className={styles.infoHeader}>
           <h2>Lista de clientes</h2>
           <div>
-            <input id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={filterClient}/>
+            <input id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={filterClient} />
             <label>Procurar por:</label>
             <select name="filter" id="filter" onChange={filterClient}>
               <option id="name">Nome</option>
@@ -176,14 +178,14 @@ function Cobranca (props: ICobrancaProps) {
                 <th>Situação</th>
               </tr>
             {clientRender()}
-          <div className={styles.paginationContainer}>
-            { Array.from(Array(pages), (item, index) => (
-              <div>
-                <button className={styles.paginationButtons} value={index} onClick={(e) => loadMore(e)}>{index}</button>
-              </div>
-            )) }
-          </div>
-          </table>
+            </table>
+            <div className={styles.paginationContainer}>
+              { Array.from(Array(pages), (item, index) => (
+                <div>
+                  <button className={styles.paginationButtons} value={index} onClick={(e) => loadMore(e)}>{index}</button>
+                </div>
+              )) }
+            </div>
           </>
         }
         {/* Modal add */}

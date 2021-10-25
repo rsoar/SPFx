@@ -19,10 +19,7 @@ interface IProps {
 }
 
 export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, handleModal, action, editClientMethod, pages, pageSize, currentPage, loadMoreMethod}: IProps) => {
-  useEffect(() => {
-    console.log(pageSize);
-    console.log(currentPage);
-  })
+
   return (
     <div className={styles.modalBackground}>
       <div className={styles.modalContent}>
@@ -41,17 +38,18 @@ export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, han
               <td>{dateFormatMethod(item.Created)}</td>
               <td>{item.Motivo}</td>
               { item.situacao == 'Pendente' ? <td className={styles.statusPending}>{item.situacao}</td> : <td className={styles.statusFinish}>{item.situacao}</td> }
-              { action !== null && action == 'delete' ? <button className={styles.deleteInfo} onClick={() => deleteClientMethod(item.Id)}>X</button> : <select name="editStatusClient" id="editStatusClient" onChange={(e) => editClientMethod(e, item)}>
-                <option value="null">----</option>
+              { action !== null && action == 'delete' ? <button className={styles.deleteInfo} onClick={() => deleteClientMethod(item.Id)}>X</button> : 
+              <select name="editStatusClient" id="editStatusClient" onChange={(e) => editClientMethod(e, item)}>
+                <option value={`${item.situacao}`}>----</option>
                 <option value="Pendente">Pendente</option>
                 <option value="Finalizado">Finalizado</option>
               </select> }
             </tr>
               )) }
-            <div>
+            <div className={styles.paginationContainer}>
               {Array.from(Array(pages), (item, index) => (
                 <div>
-                  <button value={index} onClick={(e) => loadMoreMethod(e)}>{index}</button>
+                  <button className={styles.paginationButtons} value={index} onClick={(e) => loadMoreMethod(e)}>{index}</button>
                 </div>
               ))}
             </div>

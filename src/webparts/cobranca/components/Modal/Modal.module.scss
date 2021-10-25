@@ -76,21 +76,28 @@
   font-size: 1.4rem;
 }
 
-.paginationBtn {
-  width: 100%;
-  padding: 10px 0px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  button {
-    margin-right: 5px;
-  }
-}
-
 .statusPending {
   color: red;
 }
 .statusFinish {
   color: rgb(41, 189, 41);
+}
+
+.paginationContainer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+.paginationButtons {
+  padding: 3px 8px;
+  background-color: #fff;
+  color: rgb(90, 90, 90);
+  border: none;
+  border-bottom: 1px solid #fff;
+  margin-right: 5px;
+  font-size: 1.8rem;
+  outline: none;
+}
+.paginationButtons:hover {
+  border-bottom: 1px solid rgb(90, 90, 90);
 }
