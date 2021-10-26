@@ -21,8 +21,9 @@
     "@pnp/graph": "^2.10.0",
     "@pnp/sp": "^2.10.0",
     "lodash": "^4.17.21",
-    "react": "^16.8.5",
-    "react-dom": "^16.8.5"
+    "react": "16.8.5",
+    "react-dom": "16.8.5",
+    "office-ui-fabric-react": "6.214.0"
   },
   "devDependencies": {
     "@microsoft/rush-stack-compiler-3.3": "0.3.5",
@@ -33,8 +34,8 @@
     "@types/chai": "3.4.34",
     "@types/es6-promise": "0.0.33",
     "@types/mocha": "2.2.38",
-    "@types/react": "^16.8.8",
-    "@types/react-dom": "^16.8.3",
+    "@types/react": "16.8.8",
+    "@types/react-dom": "16.8.3",
     "@types/webpack-env": "1.13.1",
     "ajv": "~5.2.2",
     "gulp": "~3.9.1",
