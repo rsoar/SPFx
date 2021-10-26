@@ -35,6 +35,7 @@ export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, han
           { listDataClient.slice(currentPage * pageSize, currentPage + pageSize).map(item => (
             <tr>
               <td>{item.Title}</td>
+              {console.log(item.Created)}
               <td>{dateFormatMethod(item.Created)}</td>
               <td>{item.Motivo}</td>
               { item.situacao == 'Pendente' ? <td className={styles.statusPending}>{item.situacao}</td> : <td className={styles.statusFinish}>{item.situacao}</td> }

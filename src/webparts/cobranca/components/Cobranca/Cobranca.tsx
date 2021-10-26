@@ -52,6 +52,7 @@ function Cobranca (props: ICobrancaProps) {
   
   useEffect(() => {
     loadData();
+
     filterInput.current.value = ''
   }, [filter]);
 
