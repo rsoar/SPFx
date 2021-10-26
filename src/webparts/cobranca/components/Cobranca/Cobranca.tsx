@@ -37,12 +37,17 @@ function Cobranca (props: ICobrancaProps) {
     Motivo: '',
     situacao: '',
   });
-  const filterInput = useRef(null);
   /* states paginacao */
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(6);
   const pages = Math.ceil(unfilteredClients.length/pageSize);
 
+  /*  picker */
+  // const [pickerActive, setPickerActive] = useState<boolean>(false);
+  // const picker = useRef(null);
+  // const [searchValue, setSearchValue] = useState<string>('');
+
+  
   useEffect(() => {
     loadData();
   }, []);
@@ -98,7 +103,8 @@ function Cobranca (props: ICobrancaProps) {
     setIdClient(clientID);
   }
 
-  const handleEditModal = () => {
+  const handleEditModal = (dataClient: IDataClient) => {
+    setClient({...client, Title: dataClient.Title, Motivo: dataClient.Motivo, situacao: dataClient.situacao})
     setEditModal(!editModal);
   }
 
@@ -121,7 +127,6 @@ function Cobranca (props: ICobrancaProps) {
       <main>
         <div className={styles.category}>
           <a href="#" onClick={handleModal}>Adicionar</a>
-          <a href="#" onClick={handleEditModal}>Editar</a>
         </div>
         <section className={styles.dataBox}>
           <p>Número de clientes cadastrados: <span className={styles.countBox}>{listDataClient.length}</span></p>
@@ -131,7 +136,9 @@ function Cobranca (props: ICobrancaProps) {
         <div className={styles.infoHeader}>
           <h2>Lista de clientes</h2>
           <div>
-            <input ref={filterInput} id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={handleFilterClients} />
+            <div className={styles.teste}>
+              <input autoComplete="off" id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={handleFilterClients} />
+            </div>
           </div>
         </div>
           {loading ? <div className={styles.loadbox}><div className={styles.loading}></div></div> : 
@@ -151,7 +158,10 @@ function Cobranca (props: ICobrancaProps) {
                   <td>{dateFormat(dataClient.Created)}</td>
                   <td>{dataClient.Motivo}</td>
                   { dataClient.situacao == 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
-                  <td><button className={styles.deleteInfo} onClick={() => handleshowDeleteModal(dataClient.Id)}>X</button></td>
+                  <td>
+                    <button className={styles.deleteInfo} onClick={() => handleshowDeleteModal(dataClient.Id)}>X</button>
+                    <button onClick={() => handleEditModal(dataClient)}>Edit</button>
+                  </td>
                 </tr>
               )))}
             </table>
@@ -182,7 +192,8 @@ function Cobranca (props: ICobrancaProps) {
           </div>
            : !showDeleteModal }
         {/* Modal edit */}
-        { editModal ? < Modal pages={pages} pageSize={pageSize} currentPage={currentPage} loadMoreMethod={loadMore} listDataClient={listDataClient} dateFormatMethod={dateFormat} deleteClientMethod={deleteClient} handleModal={handleEditModal} editClientMethod={editClient}/> : editModal }
+        { editModal ? < Add client={client} handleModal={handleEditModal} defineValueInput={defineValueInput} addClient={addCliente}/> 
+        : editModal }
       </main>
     </div>
   )
