@@ -12,10 +12,7 @@ interface IProps {
 }
 
 export const Add = ({ client, handleModal, defineValueInput, addClient }: IProps) => {
-  useEffect(() => {
-    console.log(client)
-  })
-
+  
   return(
     <div className={styles.modalBackground}>
       <div className={styles.modalContent}>
