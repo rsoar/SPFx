@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './Cobranca.module.scss';
 
 import { sp } from "@pnp/sp";
@@ -39,20 +39,20 @@ function Cobranca (props: ICobrancaProps) {
     situacao: '',
   });
 
+  const filterInput = useRef(null);
 
   /* states paginacao */
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(6);
   const pages = Math.ceil(unfilteredClients.length/pageSize);
-  
+
   useEffect(() => {
     loadData();
   }, []);
   
   useEffect(() => {
     loadData();
-    const campoBusca: HTMLInputElement = document.getElementById('searchInput') as HTMLInputElement;
-    campoBusca.value = ''
+    filterInput.current.value = ''
   }, [filter]);
 
   const loadData = async () => {
@@ -155,11 +155,14 @@ function Cobranca (props: ICobrancaProps) {
           <a href="#" onClick={handleDeleteModal}>Excluir</a>
         </div>
         <section className={styles.dataBox}>
+          <p>Número de clientes cadastrados: <span className={styles.countBox}>{listDataClient.length}</span></p>
+          <p>Clientes com situação <span className={styles.statusPending}>pendente</span>: <span className={styles.countBox}>{listDataClient.filter(data => data.situacao === 'Pendente').length}</span></p>
+          <p>Clientes com situação <span className={styles.statusFinish}>finalizado</span>: <span className={styles.countBox}>{listDataClient.filter(data => data.situacao === 'Finalizado').length}</span></p>
         </section>
         <div className={styles.infoHeader}>
           <h2>Lista de clientes</h2>
           <div>
-            <input id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={filterClient} />
+            <input ref={filterInput} id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={filterClient} />
             <label>Procurar por:</label>
             <select name="filter" id="filter" onChange={filterClient}>
               <option id="name">Nome</option>
@@ -182,7 +185,7 @@ function Cobranca (props: ICobrancaProps) {
             <div className={styles.paginationContainer}>
               { Array.from(Array(pages), (item, index) => (
                 <div>
-                  <button className={styles.paginationButtons} value={index} onClick={(e) => loadMore(e)}>{index}</button>
+                  <button className={styles.paginationButtons} value={index} onClick={(e) => loadMore(e)}>{index + 1}</button>
                 </div>
               )) }
             </div>
