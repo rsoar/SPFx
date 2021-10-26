@@ -21,15 +21,14 @@ import { filter } from 'lodash';
 import { Modal } from '../Modal/Modal';
 import { Add } from '../Modal/Add/Add';
 
+
 function Cobranca (props: ICobrancaProps) {
 
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [deleteModal, setDeleteModal] = useState<boolean>(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [editModal, setEditModal] = useState<boolean>(false);
+  const [idClient, setIdClient] = useState<number>(null);
 
-  const [action, setAction] = useState<string>(null);
-  const [filter, setFilter] = useState<string>('Nome');
-  
   const [adminData, setAdminData] = useState<IDataAdmin>();
   const [listDataClient, setListDataClient] = useState<IDataClient[]>([]);
   const [unfilteredClients, setUnfilteredClients] = useState<IDataClient[]>([]);
@@ -38,9 +37,7 @@ function Cobranca (props: ICobrancaProps) {
     Motivo: '',
     situacao: '',
   });
-
   const filterInput = useRef(null);
-
   /* states paginacao */
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(6);
@@ -50,12 +47,6 @@ function Cobranca (props: ICobrancaProps) {
     loadData();
   }, []);
   
-  useEffect(() => {
-    loadData();
-
-    filterInput.current.value = ''
-  }, [filter]);
-
   const loadData = async () => {
     const userAdmin = props.context.pageContext.user;
     const allItems: IDataClient[] = await sp.web.lists.getByTitle("Cobranças").items.get();
@@ -79,7 +70,6 @@ function Cobranca (props: ICobrancaProps) {
   }
 
   const deleteClient = async (id: number) => {
-    setAction('delete');
     await sp.web.lists.getByTitle("Cobranças").items.getById(id).delete();
     loadData();
   }
@@ -91,17 +81,6 @@ function Cobranca (props: ICobrancaProps) {
     loadData();
   }
   
-  const clientRender = () => (
-    unfilteredClients !== null ? unfilteredClients.slice(currentPage * pageSize, currentPage * pageSize + pageSize).map(dataClient => (
-      <tr>
-        <td>{dataClient.Title}</td>
-        <td>{dateFormat(dataClient.Created)}</td>
-        <td>{dataClient.Motivo}</td>
-        { dataClient.situacao == 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
-      </tr>
-    )) : [] 
-  );
-
   const loading = unfilteredClients === null;
 
   const dateFormat = (date: string) => {
@@ -114,30 +93,20 @@ function Cobranca (props: ICobrancaProps) {
 
   const handleModal = () => setShowAddModal(!showAddModal);
 
-  const handleDeleteModal = () => {
-    setAction('delete');
-    setDeleteModal(!deleteModal);
+  const handleshowDeleteModal = (clientID: number) => {
+    setShowDeleteModal(!showDeleteModal);
+    setIdClient(clientID);
   }
 
   const handleEditModal = () => {
-    setAction('edit');
     setEditModal(!editModal);
   }
 
-  const filterClient = async (e) => {
-    if(e.target.id == 'filter') setFilter(e.target.value);
-
-    switch (filter) {
-      case 'Nome':
-        setUnfilteredClients(listDataClient.filter(data => data.Title.toLowerCase().includes(e.target.value.toLowerCase())));
-        break
-      case 'Motivo': 
-        setUnfilteredClients(listDataClient.filter(data => data.Motivo.toLowerCase().includes(e.target.value.toLowerCase())))
-        break
-      case 'Data': 
-        setUnfilteredClients(listDataClient.filter(data => data.Created.toLowerCase().includes(e.target.value.toLowerCase())))
-        break
-    }
+  const handleFilterClients = (e) => {
+    const filtered = listDataClient.filter(item => (
+      item.Title.toLowerCase().includes(e.target.value) || item.Motivo.toLowerCase().includes(e.target.value) || item.situacao.toLowerCase().includes(e.target.value)
+    ))
+    setUnfilteredClients(filtered);
   }
 
   return (
@@ -153,7 +122,6 @@ function Cobranca (props: ICobrancaProps) {
         <div className={styles.category}>
           <a href="#" onClick={handleModal}>Adicionar</a>
           <a href="#" onClick={handleEditModal}>Editar</a>
-          <a href="#" onClick={handleDeleteModal}>Excluir</a>
         </div>
         <section className={styles.dataBox}>
           <p>Número de clientes cadastrados: <span className={styles.countBox}>{listDataClient.length}</span></p>
@@ -163,13 +131,7 @@ function Cobranca (props: ICobrancaProps) {
         <div className={styles.infoHeader}>
           <h2>Lista de clientes</h2>
           <div>
-            <input ref={filterInput} id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={filterClient} />
-            <label>Procurar por:</label>
-            <select name="filter" id="filter" onChange={filterClient}>
-              <option id="name">Nome</option>
-              <option id="date">Data</option>
-              <option id="description">Motivo</option>
-            </select>
+            <input ref={filterInput} id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={handleFilterClients} />
           </div>
         </div>
           {loading ? <div className={styles.loadbox}><div className={styles.loading}></div></div> : 
@@ -180,8 +142,18 @@ function Cobranca (props: ICobrancaProps) {
                 <th>Data do registro</th>
                 <th>Motivo do contato</th>
                 <th>Situação</th>
+                <th>Ação</th>
               </tr>
-            {clientRender()}
+            {unfilteredClients !== null && (
+              unfilteredClients.slice(currentPage * pageSize, currentPage * pageSize + pageSize).map(dataClient => (
+                <tr>
+                  <td>{dataClient.Title}</td>
+                  <td>{dateFormat(dataClient.Created)}</td>
+                  <td>{dataClient.Motivo}</td>
+                  { dataClient.situacao == 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
+                  <td><button className={styles.deleteInfo} onClick={() => handleshowDeleteModal(dataClient.Id)}>X</button></td>
+                </tr>
+              )))}
             </table>
             <div className={styles.paginationContainer}>
               { Array.from(Array(pages), (item, index) => (
@@ -195,9 +167,22 @@ function Cobranca (props: ICobrancaProps) {
         {/* Modal add */}
         { showAddModal ? < Add client={client} handleModal={handleModal} defineValueInput={defineValueInput} addClient={addCliente} /> : showAddModal }
         {/* Modal delete */}
-        { deleteModal ? < Modal pages={pages} pageSize={pageSize} currentPage={currentPage} loadMoreMethod={loadMore} listDataClient={listDataClient} dateFormatMethod={dateFormat} deleteClientMethod={deleteClient} handleModal={handleDeleteModal}  action={action} editClientMethod={editClient}/> : deleteModal }
+        { showDeleteModal ? 
+          <div className={styles.modalBackground}>
+            <div className={styles.modalContent}>
+              <h1>Tem certeza que deseja excluir?</h1>
+              <div>
+                <button onClick={() => setShowDeleteModal(!showDeleteModal)}>Não</button>
+                <button onClick={() =>{
+                  setShowDeleteModal(!showDeleteModal);
+                  deleteClient(idClient);
+                }}>Sim</button>
+              </div>
+            </div>
+          </div>
+           : !showDeleteModal }
         {/* Modal edit */}
-        { editModal ? < Modal pages={pages} pageSize={pageSize} currentPage={currentPage} loadMoreMethod={loadMore} listDataClient={listDataClient} dateFormatMethod={dateFormat} deleteClientMethod={deleteClient} handleModal={handleEditModal} action={action} editClientMethod={editClient}/> : editModal }
+        { editModal ? < Modal pages={pages} pageSize={pageSize} currentPage={currentPage} loadMoreMethod={loadMore} listDataClient={listDataClient} dateFormatMethod={dateFormat} deleteClientMethod={deleteClient} handleModal={handleEditModal} editClientMethod={editClient}/> : editModal }
       </main>
     </div>
   )

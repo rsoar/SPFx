@@ -11,14 +11,13 @@ interface IProps {
   deleteClientMethod: (id: number) => void;
   editClientMethod: (e: any, item: IDataClient) => void;
   handleModal: () => void; 
-  action: string;
   pageSize: number;
   currentPage: number;
   pages: number;
   loadMoreMethod: (e: any) => void;
 }
 
-export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, handleModal, action, editClientMethod, pages, pageSize, currentPage, loadMoreMethod}: IProps) => {
+export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, handleModal, editClientMethod, pages, pageSize, currentPage, loadMoreMethod}: IProps) => {
 
   return (
     <div className={styles.modalBackground}>
@@ -35,16 +34,14 @@ export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, han
           { listDataClient.slice(currentPage * pageSize, currentPage + pageSize).map(item => (
             <tr>
               <td>{item.Title}</td>
-              {console.log(item.Created)}
               <td>{dateFormatMethod(item.Created)}</td>
               <td>{item.Motivo}</td>
               { item.situacao == 'Pendente' ? <td className={styles.statusPending}>{item.situacao}</td> : <td className={styles.statusFinish}>{item.situacao}</td> }
-              { action !== null && action == 'delete' ? <button className={styles.deleteInfo} onClick={() => deleteClientMethod(item.Id)}>X</button> : 
               <select name="editStatusClient" id="editStatusClient" onChange={(e) => editClientMethod(e, item)}>
                 <option value={`${item.situacao}`}>----</option>
                 <option value="Pendente">Pendente</option>
                 <option value="Finalizado">Finalizado</option>
-              </select> }
+              </select>
             </tr>
               )) }
             <div className={styles.paginationContainer}>
