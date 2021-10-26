@@ -16,11 +16,11 @@ export const Add = ({ client, handleModal, defineValueInput, addClient }: IProps
       <button className={styles.closeModal} onClick={handleModal}>X</button>
       <h1>ADICIONAR NOVO CLIENTE</h1>
       <label>Nome do cliente:</label>
-      <input name="Title" type="text" placeholder="Digite o nome completo do cliente" value={client.Title} onChange={defineValueInput} />
+      <input className={styles.inpt} name="Title" type="text" placeholder="Digite o nome completo do cliente" value={client.Title} onChange={defineValueInput} />
       <label>Motivo:</label>
-      <input name="Motivo" type="text" placeholder="Motivo do atendimento" value={client.Motivo} onChange={defineValueInput} />
+      <input className={styles.inpt} name="Motivo" type="text" placeholder="Motivo do atendimento" value={client.Motivo} onChange={defineValueInput} />
       <label>Situação:</label>
-      <select name="situacao" id="statusClient" onChange={(e) => defineValueInput(e)}>
+      <select className={styles.inpt} name="situacao" id="statusClient" onChange={(e) => defineValueInput(e)}>
         <option value="">----</option>
         <option value="Pendente">Em aberto</option>
         <option value="Finalizado">Finalizado</option>

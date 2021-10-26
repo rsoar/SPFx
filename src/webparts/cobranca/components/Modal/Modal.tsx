@@ -49,7 +49,7 @@ export const Modal = ({listDataClient, dateFormatMethod, deleteClientMethod, han
             <div className={styles.paginationContainer}>
               {Array.from(Array(pages), (item, index) => (
                 <div>
-                  <button className={styles.paginationButtons} value={index} onClick={(e) => loadMoreMethod(e)}>{index}</button>
+                  <button className={styles.paginationButtons} value={index} onClick={(e) => loadMoreMethod(e)}>{index + 1}</button>
                 </div>
               ))}
             </div>
