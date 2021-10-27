@@ -9,10 +9,19 @@
           "manifest": "./src/webparts/cobranca/CobrancaWebPart.manifest.json"
         }
       ]
+    },
+    "hello-world-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/helloWorld/HelloWorldWebPart.js",
+          "manifest": "./src/webparts/helloWorld/HelloWorldWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
-    "CobrancaWebPartStrings": "lib/webparts/cobranca/loc/{locale}.js"
+    "CobrancaWebPartStrings": "lib/webparts/cobranca/loc/{locale}.js",
+    "HelloWorldWebPartStrings": "lib/webparts/helloWorld/loc/{locale}.js"
   }
 }
