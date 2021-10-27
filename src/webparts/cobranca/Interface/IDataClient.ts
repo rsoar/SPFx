@@ -5,4 +5,5 @@ export interface IDataClient {
   situacao: string;
   Created?: string;
   Modified?: string;
+  ImageUrl?: string;
 }
