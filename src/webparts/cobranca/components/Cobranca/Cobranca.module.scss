@@ -34,12 +34,12 @@ header {
       font-size: 1.4rem;
     }
   }
-  .iconAdmin {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
+}
+.iconAdmin {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  margin-right: 10px;
 }
 
 .category {
@@ -181,6 +181,7 @@ tr {
   td {
     padding: 4px 0px;
     font-size: 1.6rem;
+    height: 50px;
   }
   
   th {
@@ -188,6 +189,11 @@ tr {
     width: 25%;
     padding: 10px 0px;
   }
+}
+
+.align {
+  display: flex;
+  align-items: center;
 }
 
 .loadbox {
@@ -280,19 +286,19 @@ tr {
 }
 
 .modalBackground {
-  position: absolute;
+  position: fixed;
   background-color: #00000050;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100%;
-  // display: flex;
-  // justify-content: center;
-  // align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .modalContent{
-  position: fixed;
+  position: relative;
   background-color: #f2f2f2;
   width: 50%;
   max-width: 650px;
@@ -301,7 +307,6 @@ tr {
   flex-direction: column;
   padding: 30px;
   font-size: 1.8rem;
-  margin: 25px;
   animation: modal 0.2s;
   justify-content: center;
   text-align: center;
