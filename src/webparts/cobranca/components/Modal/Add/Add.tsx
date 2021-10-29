@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { useEffect } from 'react';
+
 import { IDataClient } from '../../../Interface/IDataClient';
 
-import styles from '../Modal.module.scss';
-
-import { IPersonaProps } from 'office-ui-fabric-react';
 import PeoplePicker from '../../PeoplePicker/PeoplePicker';
+import { IPersonaProps } from 'office-ui-fabric-react';
+
+
+import styles from './Modal.module.scss';
 
 interface IProps {
   client: IDataClient
@@ -14,7 +16,7 @@ interface IProps {
   addClient: () => void;
   updateClient: (dataClient: IDataClient) => void;
   action: number;
-  currentClient: (clients: IDataClient) => void;
+  currentClient: (clients: IPersonaProps[]) => void;
 }
 
 export const Add = ({currentClient, client, handleModal, defineValueInput, addClient, updateClient, action}: IProps) => {
@@ -25,7 +27,7 @@ export const Add = ({currentClient, client, handleModal, defineValueInput, addCl
         <button className={styles.closeModal} onClick={handleModal}>X</button>
         { action !== 0 ? <h1>Editar cliente</h1> : <h1>Adicionar novo cliente</h1> }
         <label>Nome do cliente:</label>
-        < PeoplePicker onChange={async (peoples) => currentClient(peoples) } />
+        < PeoplePicker className={styles.border} onChange={async (peoples) => currentClient(peoples) } />
         <label>Motivo:</label>
         <input className={styles.inpt} name="Motivo" type="text" placeholder="Motivo do atendimento" onChange={defineValueInput} />
         <label>Situação:</label>

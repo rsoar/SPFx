@@ -1,30 +1,25 @@
-import { IPersonaProps, NormalPeoplePicker, people, SelectedPeopleList } from 'office-ui-fabric-react';
-
-import "@pnp/sp/search";
-import { ISearchQuery, SearchResults, SearchQueryBuilder } from "@pnp/sp/search";
-
 import * as React from 'react';
+
 import { useState, useEffect, useRef } from 'react';
 import styles from './Cobranca.module.scss';
 
 import { sp } from "@pnp/sp";
+import "@pnp/sp/search";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import "@pnp/sp/site-users";
 
-import { IItemAddResult, IItemUpdateResult, PagedItemCollection } from "@pnp/sp/items";
 import { IDataClient } from '../../Interface/IDataClient';
-
-import { PropertyPaneSlider } from '@microsoft/sp-property-pane';
 import { ICobrancaProps } from './ICobrancaProps';
 import { IDataAdmin } from '../../Interface/IDataAdmin';
-import { IList } from '@pnp/sp/lists';
+import { Add } from '../Modal/Add/Add';
 
 import * as _ from 'lodash';
-import { add, filter } from 'lodash';
-import { Modal } from '../Modal/Modal';
-import { Add } from '../Modal/Add/Add';
+import { filter } from 'lodash';
+
+import { IPersonaProps } from 'office-ui-fabric-react';
+import { Icon } from '@fluentui/react/lib/Icon'
 
 function Cobranca (props: ICobrancaProps) {
 
@@ -86,8 +81,8 @@ function Cobranca (props: ICobrancaProps) {
   }
 
   const updateClient = async (data: IDataClient) => {
-    const list = await sp.web.lists.getByTitle("Cobranças");
     if(data.Title == '' || data.Motivo == '' || data.situacao == '' ||  data.ImageUrl == '') return alert("Preencha todos os campos");
+    const list = await sp.web.lists.getByTitle("Cobranças");
     await list.items.getById(dataClient.Id).update({
       Title: data.Title,
       Motivo: data.Motivo,
@@ -131,10 +126,10 @@ function Cobranca (props: ICobrancaProps) {
     setUnfilteredClients(filtered);
   }
 
-  const currentClient = (clients) => {
+  const currentClient = (clients: IPersonaProps[]) => {
     setCurrentClients(clients);
     clients.forEach((item: IPersonaProps) => {
-      setClient({...client, Id: clients.Id, Title: item.text, ImageUrl: item.imageUrl});
+      setClient({...client, Title: item.text, ImageUrl: item.imageUrl});
     });
   }
 
@@ -177,13 +172,24 @@ function Cobranca (props: ICobrancaProps) {
             {unfilteredClients !== null && (
               unfilteredClients.slice(currentPage * pageSize, currentPage * pageSize + pageSize).map(dataClient => (
                 <tr>
-                  <td className={styles.align}><img className={styles.iconAdmin} src={dataClient.ImageUrl} alt={dataClient.Title} /> {dataClient.Title}</td>
+                  <td>
+                     <div className={styles.align}>
+                        <img src={dataClient.ImageUrl} alt={dataClient.Title} />
+                        {dataClient.Title}
+                    </div>
+                  </td>
                   <td>{dateFormat(dataClient.Created)}</td>
                   <td>{dataClient.Motivo}</td>
                   { dataClient.situacao == 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
                   <td>
-                    <button className={styles.deleteInfo} onClick={() => handleshowDeleteModal(dataClient)}>X</button>
-                    <button onClick={() => handleEditModal(dataClient)}>Edit</button>
+                    <div className={styles.align}>
+                      <button onClick={() => handleshowDeleteModal(dataClient)}>
+                        < Icon iconName="Delete" title="Excluir" aria-aria-label="Excluir" className={styles.iconDelete}/>
+                      </button>
+                      <button onClick={() => handleEditModal(dataClient)}>
+                        < Icon iconName="Edit" title="Editar" aria-label="Editar" className={styles.iconEdit} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )))}
