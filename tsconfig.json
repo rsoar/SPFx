@@ -24,11 +24,8 @@
     ],
     "lib": [
       "es2015",
-<<<<<<< HEAD
       "es2016",
-=======
       "es2017",
->>>>>>> d893f58d18f4629cefd75a00cea692a21bb9a711
       "es5",
       "dom",
       "es2015.collection"

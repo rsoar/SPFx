@@ -5,20 +5,19 @@ import { IDataClient } from '../../../Interface/IDataClient';
 import styles from '../Modal.module.scss';
 
 import { IPersonaProps } from 'office-ui-fabric-react';
+import PeoplePicker from '../../PeoplePicker/PeoplePicker';
 
 interface IProps {
   client: IDataClient
   handleModal: (dataClient) => void;
   defineValueInput: (e: any) => void;
   addClient: () => void;
-  updateClient: (dataClient) => void;
+  updateClient: (dataClient: IDataClient) => void;
   action: number;
-  picker: any;
-  peopleSelected: IPersonaProps;
-  pickerMethod: () => void;
+  currentClient: (clients: IDataClient) => void;
 }
 
-export const Add = ({pickerMethod, peopleSelected, client, handleModal, defineValueInput, addClient, updateClient, action, picker}: IProps) => {
+export const Add = ({currentClient, client, handleModal, defineValueInput, addClient, updateClient, action}: IProps) => {
   
   return(
     <div className={styles.modalBackground}>
@@ -26,10 +25,9 @@ export const Add = ({pickerMethod, peopleSelected, client, handleModal, defineVa
         <button className={styles.closeModal} onClick={handleModal}>X</button>
         { action !== 0 ? <h1>Editar cliente</h1> : <h1>Adicionar novo cliente</h1> }
         <label>Nome do cliente:</label>
-        {pickerMethod()}
-        {/* <input className={styles.inpt} name="Title" type="text" placeholder="Digite o nome completo do cliente" value={client.Title} onChange={defineValueInput} /> */}
+        < PeoplePicker onChange={async (peoples) => currentClient(peoples) } />
         <label>Motivo:</label>
-        <input className={styles.inpt} name="Motivo" type="text" placeholder="Motivo do atendimento" value={client.Motivo} onChange={defineValueInput} />
+        <input className={styles.inpt} name="Motivo" type="text" placeholder="Motivo do atendimento" onChange={defineValueInput} />
         <label>Situação:</label>
         <select className={styles.inpt} name="situacao" id="statusClient" onChange={(e) => defineValueInput(e)}>
           <option value="">----</option>

@@ -1,4 +1,4 @@
-import { IPersonaProps, NormalPeoplePicker, people } from 'office-ui-fabric-react';
+import { IPersonaProps, NormalPeoplePicker, people, SelectedPeopleList } from 'office-ui-fabric-react';
 
 import "@pnp/sp/search";
 import { ISearchQuery, SearchResults, SearchQueryBuilder } from "@pnp/sp/search";
@@ -31,7 +31,7 @@ function Cobranca (props: ICobrancaProps) {
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [editModal, setEditModal] = useState<boolean>(false);
-  const [idClient, setIdClient] = useState<number>(null);
+  const [dataClient, setDataClient] = useState<IDataClient>(null);
 
   const [adminData, setAdminData] = useState<IDataAdmin>();
   const [listDataClient, setListDataClient] = useState<IDataClient[]>([]);
@@ -42,21 +42,18 @@ function Cobranca (props: ICobrancaProps) {
     situacao: '',
     ImageUrl: '',
   });
-  const [action, setAction] = useState<number>(0); // 0 - add user ~ 1- edit user
+  const [action, setAction] = useState<number>(0); // 0 - add user ~~~ 1- edit user
 
-  /* states paginacao */
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(6);
   const pages = Math.ceil(unfilteredClients.length/pageSize);
 
-  const picker = useRef(null);
-  const [peopleList, setPeopleList] = useState<IPersonaProps[]>(null);
-  const [peopleSelected, setPeopleSelected] = useState<IPersonaProps>();
+  const [currentClients, setCurrentClients] = useState<IPersonaProps[]>(null);
 
   useEffect(() => {
     loadData();
   }, []);
-  
+
   const loadData = async () => {
     const userAdmin = props.context.pageContext.user;
     const allItems: IDataClient[] = await sp.web.lists.getByTitle("Cobranças").items.get();
@@ -68,30 +65,35 @@ function Cobranca (props: ICobrancaProps) {
 
   const loadMore = (e: any) => setCurrentPage(e.target.value);
 
-  const addCliente = async () => {
-    if (client.Title == '' || client.Motivo == '' || client.situacao == '' ) return alert('Insira os dados do cliente');
-    const newClient: IItemAddResult = await sp.web.lists.getByTitle("Cobranças").items.add({
-      Title: client.Title,
-      Motivo: client.Motivo,
-      situacao: client.situacao,
-      ImageUrl: client.ImageUrl
-    });
-    loadData();
-    setClient({...client, Title: '', Motivo: ''})
-  }
-
-  const deleteClient = async (id: number) => {
-    await sp.web.lists.getByTitle("Cobranças").items.getById(id).delete();
-    loadData();
-  }
-
-  const updateClient = async (dataClient: IDataClient) => {
-    const list = sp.web.lists.getByTitle("Cobranças")
-    await list.items.getById(dataClient.Id).update({
-        Title: dataClient.Title,
-        Motivo: dataClient.Motivo,
-        situacao: dataClient.situacao
+  const addClient = async () => {
+    if(client.Title == '' || client.Motivo == '' || client.situacao == '' ||  client.ImageUrl == '') return alert("Preencha todos os campos");
+    currentClients.forEach(async (item: IPersonaProps) => {
+      await sp.web.lists.getByTitle("Cobranças").items.add({
+        Title: item.text,
+        Motivo: client.Motivo,
+        situacao: client.situacao,
+        ImageUrl: item.imageUrl
+      });
+      loadData();
     })
+    setClient({...client, Title: '', Motivo: '', situacao: '', ImageUrl: ''});
+    setShowAddModal(!showAddModal);
+  }
+  
+  const deleteClient = async (dataClient: IDataClient) => {
+    await sp.web.lists.getByTitle("Cobranças").items.getById(dataClient.Id).delete();
+    loadData();
+  }
+
+  const updateClient = async (data: IDataClient) => {
+    const list = await sp.web.lists.getByTitle("Cobranças");
+    if(data.Title == '' || data.Motivo == '' || data.situacao == '' ||  data.ImageUrl == '') return alert("Preencha todos os campos");
+    await list.items.getById(dataClient.Id).update({
+      Title: data.Title,
+      Motivo: data.Motivo,
+      situacao: data.situacao,
+      ImageUrl: data.ImageUrl,
+    });
     loadData();
     setEditModal(!editModal);
   }
@@ -104,21 +106,21 @@ function Cobranca (props: ICobrancaProps) {
     return dateFormated;
   }
   
-  const defineValueInput = (e: React.ChangeEvent<HTMLInputElement>) => setClient({ ...client, [e.target.name]: e.target.value });
+  const defineValueInput = (e: React.ChangeEvent<HTMLInputElement>) => setClient({ ...client, [e.target.name]: e.target.value })
 
   const handleModal = () => {
     setAction(0);
     setShowAddModal(!showAddModal);
   }
 
-  const handleshowDeleteModal = (clientID: number) => {
+  const handleshowDeleteModal = (clientID: IDataClient) => {
     setShowDeleteModal(!showDeleteModal);
-    setIdClient(clientID);
+    setDataClient(clientID);
   }
 
   const handleEditModal = (dataClient: IDataClient) => {
     setAction(1);
-    setClient({...client, Id: dataClient.Id, Title: dataClient.Title, Motivo: dataClient.Motivo, situacao: dataClient.situacao });
+    setDataClient(dataClient);
     setEditModal(!editModal);
   }
 
@@ -129,42 +131,11 @@ function Cobranca (props: ICobrancaProps) {
     setUnfilteredClients(filtered);
   }
 
-  const pickerMethod = () => {
-    const onResolveSuggestions = async ( filterText: string, currentPersonas: IPersonaProps[] ) => {
-      const personas = await sp.searchWithCaching({
-          Querytext: `Title: "${filterText}*" OR WorkEmail: "${filterText}*"`,
-          SourceId: "b09a7990-05ea-4af9-81ef-edfab16c4e31",
-          RowLimit: 100,
-      });
-  
-      const currentEmails = currentPersonas.map(x => x.secondaryText);
-  
-      let parsedPersonas = personas.PrimarySearchResults.map((persona:any) => {
-          return {
-              id: persona.ID,
-              accountName: persona.AccountName,
-              workEmail: persona.WorkEmail,
-              secondaryText: persona.WorkEmail,
-              text: persona.PreferredName,
-              imageUrl: `/_vti_bin/DelveApi.ashx/people/profileimage?size=S&userId=${persona.WorkEmail}`,
-              showInitialsUntilImageLoads: true
-          } as IPersonaProps;
-      }).filter(x => !currentEmails.includes(x.secondaryText));
-
-      setPeopleList(parsedPersonas);
-      filterPeople(parsedPersonas);
-
-      return parsedPersonas;
-    };
-    
-    return <NormalPeoplePicker ref={picker} onResolveSuggestions={onResolveSuggestions} {...props} onChange={filterPeople}/>;
-  }
-
-  const filterPeople = (personas: IPersonaProps[]) => {
-   personas.forEach(item => {
-     setClient({...client, Title: item.text, ImageUrl: item.imageUrl})
+  const currentClient = (clients) => {
+    setCurrentClients(clients);
+    clients.forEach((item: IPersonaProps) => {
+      setClient({...client, Id: clients.Id, Title: item.text, ImageUrl: item.imageUrl});
     });
-    console.log(client)
   }
 
   return (
@@ -211,7 +182,7 @@ function Cobranca (props: ICobrancaProps) {
                   <td>{dataClient.Motivo}</td>
                   { dataClient.situacao == 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
                   <td>
-                    <button className={styles.deleteInfo} onClick={() => handleshowDeleteModal(dataClient.Id)}>X</button>
+                    <button className={styles.deleteInfo} onClick={() => handleshowDeleteModal(dataClient)}>X</button>
                     <button onClick={() => handleEditModal(dataClient)}>Edit</button>
                   </td>
                 </tr>
@@ -227,7 +198,7 @@ function Cobranca (props: ICobrancaProps) {
           </>
         }
         {/* Modal add */}
-        { showAddModal ? < Add pickerMethod={pickerMethod} peopleSelected={peopleSelected} picker={picker} action={action} client={client} handleModal={handleModal} defineValueInput={defineValueInput} addClient={addCliente} updateClient={updateClient}/> : showAddModal }
+        { showAddModal ? < Add currentClient={currentClient} action={action} client={client} handleModal={handleModal} defineValueInput={defineValueInput} addClient={addClient} updateClient={updateClient}/> : showAddModal }
         {/* Modal delete */}
         { showDeleteModal ? 
           <div className={styles.modalBackground}>
@@ -237,14 +208,14 @@ function Cobranca (props: ICobrancaProps) {
                 <button onClick={() => setShowDeleteModal(!showDeleteModal)}>NÃO</button>
                 <button onClick={() =>{
                   setShowDeleteModal(!showDeleteModal);
-                  deleteClient(idClient);
+                  deleteClient(dataClient);
                 }}>SIM</button>
               </div>
             </div>
           </div>
            : !showDeleteModal }
         {/* Modal edit */}
-        { editModal ? < Add pickerMethod={pickerMethod} peopleSelected={peopleSelected} picker={picker} action={action} client={client} handleModal={handleEditModal} defineValueInput={defineValueInput} addClient={addCliente} updateClient={updateClient}/> 
+        { editModal ? < Add currentClient={currentClient} action={action} client={client} handleModal={handleEditModal} defineValueInput={defineValueInput} addClient={addClient} updateClient={updateClient}/> 
         : editModal }
       </main>
     </div>
