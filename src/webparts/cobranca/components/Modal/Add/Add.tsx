@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { IDataClient } from '../../../Interface/IDataClient';
 
-import PeoplePicker from '../../PeoplePicker/PeoplePicker';
+import PeoplePicker from '../../Picker/PeoplePicker';
 import { IPersonaProps } from 'office-ui-fabric-react';
 
 
@@ -17,21 +17,22 @@ interface IProps {
   updateClient: (dataClient: IDataClient) => void;
   action: number;
   currentClient: (clients: IPersonaProps[]) => void;
+  clear: () => void;
 }
 
-export const Add = ({currentClient, client, handleModal, defineValueInput, addClient, updateClient, action}: IProps) => {
-  
+export const Add = ({clear, currentClient, client, handleModal, defineValueInput, addClient, updateClient, action}: IProps) => {
+
   return(
     <div className={styles.modalBackground}>
       <div className={styles.modalContent}>
-        <button className={styles.closeModal} onClick={handleModal}>X</button>
+        <button className={styles.closeModal} onClick={(e) => { handleModal(e), clear()}}>X</button>
         { action !== 0 ? <h1>Editar cliente</h1> : <h1>Adicionar novo cliente</h1> }
         <label>Nome do cliente:</label>
-        < PeoplePicker className={styles.border} onChange={async (peoples) => currentClient(peoples) } />
+        < PeoplePicker ariaLabel="Digite o nome do cliente" value={client.Title} onChange={async (peoples) => currentClient(peoples) }/>
         <label>Motivo:</label>
-        <input className={styles.inpt} name="Motivo" type="text" placeholder="Motivo do atendimento" onChange={defineValueInput} />
+        <input className={styles.inpt} name="Motivo" type="text" placeholder="Motivo do atendimento" onChange={defineValueInput} value={client.Motivo} />
         <label>Situação:</label>
-        <select className={styles.inpt} name="situacao" id="statusClient" onChange={(e) => defineValueInput(e)}>
+        <select className={styles.inpt} name="situacao" id="statusClient" onChange={(e) => defineValueInput(e)} value={client.situacao}>
           <option value="">----</option>
           <option value="Pendente">Em aberto</option>
           <option value="Finalizado">Finalizado</option>
