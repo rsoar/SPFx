@@ -18,8 +18,9 @@ import { Add } from '../Modal/Add/Add';
 import * as _ from 'lodash';
 import { filter } from 'lodash';
 
-import { IPersonaProps } from 'office-ui-fabric-react';
-import { Icon } from '@fluentui/react/lib/Icon'
+import { format, IPersonaProps, TextField } from 'office-ui-fabric-react';
+import { Icon } from 'office-ui-fabric-react';
+import DatePickerBasicExample from '../Picker/DatePicker';
 
 function Cobranca (props: ICobrancaProps) {
 
@@ -44,6 +45,7 @@ function Cobranca (props: ICobrancaProps) {
   const pages = Math.ceil(unfilteredClients.length/pageSize);
 
   const [currentClients, setCurrentClients] = useState<IPersonaProps[]>(null);
+  const [filterActive, setFilterActive] = useState<boolean>(false);
 
   useEffect(() => {
     loadData();
@@ -71,7 +73,7 @@ function Cobranca (props: ICobrancaProps) {
       });
       loadData();
     })
-    setClient({...client, Title: '', Motivo: '', situacao: '', ImageUrl: ''});
+    clearInput();
     setShowAddModal(!showAddModal);
   }
   
@@ -90,15 +92,16 @@ function Cobranca (props: ICobrancaProps) {
       ImageUrl: data.ImageUrl,
     });
     loadData();
+    // setClient({...client, Title: '', Motivo: '', situacao: ''});
+    clearInput();
     setEditModal(!editModal);
   }
   
   const loading = unfilteredClients === null;
 
-  const dateFormat = (date: string) => {
-    let data = new Date(date);
-    let dateFormated = ((data.getDate() )) + "-" + ((data.getMonth() + 1)) + "-" + data.getFullYear(); 
-    return dateFormated;
+  const formatDate = (date: string) => {
+    const data = new Date(date);
+    return data.toLocaleString().substr(0, 10).replace(' ', 'às');
   }
   
   const defineValueInput = (e: React.ChangeEvent<HTMLInputElement>) => setClient({ ...client, [e.target.name]: e.target.value })
@@ -107,6 +110,8 @@ function Cobranca (props: ICobrancaProps) {
     setAction(0);
     setShowAddModal(!showAddModal);
   }
+
+  const clearInput = () => setClient({...client, Title: '', Motivo: '', situacao: ''});
 
   const handleshowDeleteModal = (clientID: IDataClient) => {
     setShowDeleteModal(!showDeleteModal);
@@ -133,13 +138,20 @@ function Cobranca (props: ICobrancaProps) {
     });
   }
 
+  const handleDateFilter = (date) => {
+    console.log(formatDate(date));
+    const filteredPerDate = listDataClient.filter(item => (formatDate(item.Created).includes(formatDate(date))));
+    setUnfilteredClients(filteredPerDate);
+    setFilterActive(!filterActive);
+  }
+
   return (
     <div className={styles.bgContainer}>
       <header>
         <h3>Painel do administrador</h3>
         <div>
           { adminData ? <img className={styles.iconAdmin} src={`/_vti_bin/DelveApi.ashx/people/profileimage?size=S&userId=${adminData.email}`} alt="admin-icon" /> : <img className={styles.iconAdmin} src="https://e7.pngegg.com/pngimages/636/819/png-clipart-computer-icons-privacy-policy-admin-icon-copyright-rim.png" alt="" /> }
-          <span>Administrador</span>
+          Administrador
         </div>
       </header>
       <main>
@@ -147,17 +159,17 @@ function Cobranca (props: ICobrancaProps) {
           <a href="#" onClick={handleModal}>NOVO CLIENTE</a>
         </div>
         <section className={styles.dataBox}>
-          <p>Número de clientes cadastrados: <span className={styles.countBox}>{listDataClient.length}</span></p>
-          <p>Clientes com situação <span className={styles.statusPending}>pendente</span>: <span className={styles.countBox}>{listDataClient.filter(data => data.situacao === 'Pendente').length}</span></p>
-          <p>Clientes com situação <span className={styles.statusFinish}>finalizado</span>: <span className={styles.countBox}>{listDataClient.filter(data => data.situacao === 'Finalizado').length}</span></p>
+          <p>Número de clientes cadastrados: {listDataClient.length}</p>
+          <p>Clientes com situação <span className={styles.statusPending}>pendente</span>: {listDataClient.filter(data => data.situacao === 'Pendente').length}</p>
+          <p>Clientes com situação <span className={styles.statusFinish}>finalizado</span>: {listDataClient.filter(data => data.situacao === 'Finalizado').length}</p>
         </section>
         <div className={styles.infoHeader}>
           <h2>Lista de clientes</h2>
           <div>
-            <div className={styles.teste}>
-              <input autoComplete="off" id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={handleFilterClients} />
-            </div>
           </div>
+            <input autoComplete="off" id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={handleFilterClients} />
+            {< DatePickerBasicExample onSelectDate={(date) => handleDateFilter(date)} />}
+            { filterActive ? <button onClick={() => {setUnfilteredClients(listDataClient), setFilterActive(!filterActive)}}>Remover filtro</button> : <button disabled>Remover filtro</button>}
         </div>
           {loading ? <div className={styles.loadbox}><div className={styles.loading}></div></div> : 
           <>
@@ -178,15 +190,23 @@ function Cobranca (props: ICobrancaProps) {
                         {dataClient.Title}
                     </div>
                   </td>
-                  <td>{dateFormat(dataClient.Created)}</td>
+                  <td>
+                    <div className={styles.align}>
+                      {formatDate(dataClient.Created)}
+                      <span>Editado: {formatDate(dataClient.Modified)}</span>
+                    </div>
+                  </td>
                   <td>{dataClient.Motivo}</td>
                   { dataClient.situacao == 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
                   <td>
                     <div className={styles.align}>
-                      <button onClick={() => handleshowDeleteModal(dataClient)}>
+                      <button onClick={() => {handleshowDeleteModal(dataClient)}}>
                         < Icon iconName="Delete" title="Excluir" aria-aria-label="Excluir" className={styles.iconDelete}/>
                       </button>
-                      <button onClick={() => handleEditModal(dataClient)}>
+                      <button onClick={() => {
+                        setClient({...client, Title: dataClient.Title, Motivo: dataClient.Motivo, situacao: dataClient.situacao})
+                        handleEditModal(dataClient)
+                      }}>
                         < Icon iconName="Edit" title="Editar" aria-label="Editar" className={styles.iconEdit} />
                       </button>
                     </div>
@@ -204,7 +224,7 @@ function Cobranca (props: ICobrancaProps) {
           </>
         }
         {/* Modal add */}
-        { showAddModal ? < Add currentClient={currentClient} action={action} client={client} handleModal={handleModal} defineValueInput={defineValueInput} addClient={addClient} updateClient={updateClient}/> : showAddModal }
+        { showAddModal ? < Add clear={clearInput} currentClient={currentClient} action={action} client={client} handleModal={handleModal} defineValueInput={defineValueInput} addClient={addClient} updateClient={updateClient}/> : showAddModal }
         {/* Modal delete */}
         { showDeleteModal ? 
           <div className={styles.modalBackground}>
@@ -221,7 +241,7 @@ function Cobranca (props: ICobrancaProps) {
           </div>
            : !showDeleteModal }
         {/* Modal edit */}
-        { editModal ? < Add currentClient={currentClient} action={action} client={client} handleModal={handleEditModal} defineValueInput={defineValueInput} addClient={addClient} updateClient={updateClient}/> 
+        { editModal ? < Add clear={clearInput} currentClient={currentClient} action={action} client={client} handleModal={handleEditModal} defineValueInput={defineValueInput} addClient={addClient} updateClient={updateClient}/> 
         : editModal }
       </main>
     </div>
