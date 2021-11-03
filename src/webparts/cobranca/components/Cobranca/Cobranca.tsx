@@ -18,7 +18,7 @@ import { Add } from '../Modal/Add/Add';
 import * as _ from 'lodash';
 import { filter } from 'lodash';
 
-import { format, IPersonaProps, TextField } from 'office-ui-fabric-react';
+import { IPersonaProps } from 'office-ui-fabric-react';
 import { Icon } from 'office-ui-fabric-react';
 import DatePickerBasicExample from '../Picker/DatePicker';
 
@@ -43,9 +43,9 @@ function Cobranca (props: ICobrancaProps) {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(6);
   const pages = Math.ceil(unfilteredClients.length/pageSize);
-
   const [currentClients, setCurrentClients] = useState<IPersonaProps[]>(null);
-  const [filterActive, setFilterActive] = useState<boolean>(false);
+
+  const loading = unfilteredClients === null;
 
   useEffect(() => {
     loadData();
@@ -92,16 +92,14 @@ function Cobranca (props: ICobrancaProps) {
       ImageUrl: data.ImageUrl,
     });
     loadData();
-    // setClient({...client, Title: '', Motivo: '', situacao: ''});
     clearInput();
     setEditModal(!editModal);
   }
   
-  const loading = unfilteredClients === null;
 
-  const formatDate = (date: string) => {
+  const formatDate = (date: string, count: number) => {
     const data = new Date(date);
-    return data.toLocaleString().substr(0, 10).replace(' ', 'às');
+    return data.toLocaleString().substr(0, count).replace(' ', ' às ');
   }
   
   const defineValueInput = (e: React.ChangeEvent<HTMLInputElement>) => setClient({ ...client, [e.target.name]: e.target.value })
@@ -131,18 +129,16 @@ function Cobranca (props: ICobrancaProps) {
     setUnfilteredClients(filtered);
   }
 
+  const handleFilterPerDate = (date) => {
+    const filtered = listDataClient.filter(item => formatDate(item.Created, 10) === formatDate(date.toString(), 10));
+    setUnfilteredClients(filtered);
+  }
+
   const currentClient = (clients: IPersonaProps[]) => {
     setCurrentClients(clients);
     clients.forEach((item: IPersonaProps) => {
       setClient({...client, Title: item.text, ImageUrl: item.imageUrl});
     });
-  }
-
-  const handleDateFilter = (date) => {
-    console.log(formatDate(date));
-    const filteredPerDate = listDataClient.filter(item => (formatDate(item.Created).includes(formatDate(date))));
-    setUnfilteredClients(filteredPerDate);
-    setFilterActive(!filterActive);
   }
 
   return (
@@ -165,11 +161,13 @@ function Cobranca (props: ICobrancaProps) {
         </section>
         <div className={styles.infoHeader}>
           <h2>Lista de clientes</h2>
-          <div>
-          </div>
+          <div className={styles.infoContainer}>
             <input autoComplete="off" id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={handleFilterClients} />
-            {< DatePickerBasicExample onSelectDate={(date) => handleDateFilter(date)} />}
-            { filterActive ? <button onClick={() => {setUnfilteredClients(listDataClient), setFilterActive(!filterActive)}}>Remover filtro</button> : <button disabled>Remover filtro</button>}
+            <div className={styles.dateContainer}>
+              {< DatePickerBasicExample onSelectDate={(date) => handleFilterPerDate(date)}/>}
+              <button onClick={() => {setUnfilteredClients(listDataClient)}}>Remover filtro</button>
+            </div>
+          </div>
         </div>
           {loading ? <div className={styles.loadbox}><div className={styles.loading}></div></div> : 
           <>
@@ -185,21 +183,21 @@ function Cobranca (props: ICobrancaProps) {
               unfilteredClients.slice(currentPage * pageSize, currentPage * pageSize + pageSize).map(dataClient => (
                 <tr>
                   <td>
-                     <div className={styles.align}>
+                     <div className={styles.tdCtn}>
                         <img src={dataClient.ImageUrl} alt={dataClient.Title} />
                         {dataClient.Title}
                     </div>
                   </td>
                   <td>
-                    <div className={styles.align}>
-                      {formatDate(dataClient.Created)}
-                      <span>Editado: {formatDate(dataClient.Modified)}</span>
+                    <div className={styles.tdCtn2}>
+                      {formatDate(dataClient.Created, 10)}
+                      <span>Editado: {formatDate(dataClient.Modified, 16)}</span>
                     </div>
                   </td>
                   <td>{dataClient.Motivo}</td>
                   { dataClient.situacao == 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
                   <td>
-                    <div className={styles.align}>
+                    <div className={styles.tdCtn}>
                       <button onClick={() => {handleshowDeleteModal(dataClient)}}>
                         < Icon iconName="Delete" title="Excluir" aria-aria-label="Excluir" className={styles.iconDelete}/>
                       </button>

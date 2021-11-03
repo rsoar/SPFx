@@ -5,7 +5,9 @@
   font-size: 10px;
 }
 
-$text-color: #5a5a5aff;
+$primaryColor: #FFF;
+$secondaryColor: #E4E4E4;
+$textPrimaryColor: #5a5a5aff;
 
 @mixin flexConfig($direction, $justify, $align) {
   display: flex;
@@ -26,19 +28,19 @@ $text-color: #5a5a5aff;
 header {
   @include flexConfig(row, space-between, center);
   width: 100%;
-  background-color: #fff;
-  box-shadow: 0px 15px 10px -15px #e4e4e4;
+  background-color: $primaryColor;
+  box-shadow: 0px 15px 10px -15px $secondaryColor;
   padding: 10px 10px 20px;
 
   h3 {
-    @include fontConfig(1.4rem, $text-color, none);
+    @include fontConfig(1.4rem, $textPrimaryColor, none);
   }
 
   div {
     @include flexConfig(row, none, center);
 
     &:nth-child(2) {
-      @include fontConfig(1.3rem, $text-color, none);
+      @include fontConfig(1.3rem, $textPrimaryColor, none);
     }
   }
 }
@@ -52,18 +54,18 @@ header {
 .category {
   @include flexConfig(row, space-evenly, none);
   margin: 15px auto 0px;
-  background-color: #fff;
+  background-color: $primaryColor;
   text-align: center;
 
   a {
-    border-bottom: 2px solid #fff;
+    border-bottom: 2px solid $primaryColor;
     padding: 10px 30px;
     width: 20%;
     text-decoration: none;
-    @include fontConfig(1.3rem, $text-color, bold);
+    @include fontConfig(1.3rem, $textPrimaryColor, bold);
 
     &:hover {
-      border-bottom: 2px solid $text-color;
+      border-bottom: 2px solid $textPrimaryColor;
     }
   }
   
@@ -81,11 +83,11 @@ button {
 
   p {
     border-radius: 12px;
-    background-color: #fff;
+    background-color:$primaryColor;
     padding: 10px;
     text-align: center;
     display: block;
-    @include fontConfig(1.6rem, $text-color, bold);
+    @include fontConfig(1.6rem, $textPrimaryColor, bold);
 
     span {
       font-size: 1.6rem;
@@ -93,75 +95,52 @@ button {
   }
 }
 
-.infoHeader, .infoCategory {
-  @include flexConfig(row, space-between, none);
-  background-color: #fff;
-  padding: 8px;
-}
-
 .infoHeader {
   margin-bottom: 8px;
-  padding: 15px 25px;
-  @include flexConfig(row, none, center);
+  padding: 25px 25px;
+  @include flexConfig(row, space-between, center);
+  background-color: $primaryColor;
+  position: relative;
 
   h2 {
-    @include fontConfig(1.8rem, $text-color, none);
+    @include fontConfig(2.1rem, $textPrimaryColor, none);
   }
-  label {
-    font-size: 1.1rem;
-    margin-left: 10px;
-  }
-  select {
-    margin-left: 5px;
-    padding: 6px;
-  }
-  select>option {
-    text-align: center;
-    font-size: 1.4rem;
-  }
+  
   .inputSearchClient {
     margin-left: 5px;
     padding: 4px;
     font-size: 1.5rem;
     outline: none;
     border: none;
-    background-color: #e4e4e4;
+    background-color: $secondaryColor;
   }
-}
+  .infoContainer {
+    @include flexConfig(row, none, center);
+    position: relative;
 
-.pickerContainer {
-  margin: 5px 0px 0px 6px;
-  background-color: #fff;
-  border: 1px solid #00000040;
-  position: absolute;
-  animation: fade 0.4s;
-  
-  ul {
-    list-style: none;
-    li {
-      font-size: 1.4rem;
-      padding: 3px 15px;
+    input {
+      margin-right: 10px;
     }
-  }
-}
+    .dateContainer {
+      padding: 5px 0px;
+      position: relative; 
 
-.infoCategory {
-
-  span {
-    color: $text-color;
-    width: 25%;
-    min-width: 240px;
+      button {
+        position: absolute;
+        right: 0;
+      }
+    }
   }
 }
 
 table {
   width: 100%;
-  background-color: #fff;
+  background-color: $primaryColor;
   padding: 15px;
   border-radius: 12px;
 }
 th, td {
-  @include fontConfig(1.6rem, $text-color, none);
+  @include fontConfig(1.6rem, $textPrimaryColor, none);
   padding: 10px 0px;
 }
 tr {
@@ -169,7 +148,7 @@ tr {
   text-align: center;  
 }
 
-.align {
+.tdCtn{
   @include flexConfig(row, center, center);
   font-size: 1.6rem;
   padding: 6px;
@@ -184,15 +163,22 @@ tr {
     margin-right: 5px;
   }
 }
+.tdCtn2 {
+  @include flexConfig(column, none, none);
+  @include fontConfig(1.6rem, $textPrimaryColor, none);
+  span {
+    margin: 5px 0px -11px;
+  }
+}
 
 .loadbox {
   @include flexConfig(row, center, none);
   width: 100%;
-  background-color: #fff;
+  background-color: $primaryColor;
   padding: 30px 0px;
 
     .loading {
-      border: 1px solid $text-color;
+      border: 1px solid $textPrimaryColor;
       border-top: 3px solid #0051ca;
       width: 50px;
       height: 50px;
@@ -214,25 +200,15 @@ tr {
 }
 .paginationButtons {
   padding: 3px 8px;
-  background-color: #fff;
+  background-color: $primaryColor;
   border: none;
-  border-bottom: 1px solid #fff;
+  border-bottom: 1px solid $primaryColor;
   margin-right: 5px;
-  @include fontConfig(1.8rem, $text-color, none);
+  @include fontConfig(1.8rem, $textPrimaryColor, none);
   outline: none;
 }
 .paginationButtons:hover {
   border-bottom: 1px solid #5a5a5a;
-}
-
-.deleteInfo {
-  padding: 4px 8px;
-  border-radius: 8px;
-  border: none;
-  background-color: #fff;
-  font-weight: bold;
-  font-size: 1.4rem;
-  @include fontConfig(1.4rem, #b80000, none);
 }
 
 .modalBackground {
@@ -268,10 +244,10 @@ tr {
     padding: 15px 0px;
 
     button {
-      background-color: #007FFF;
-      @include fontConfig(1.6rem, #fff, bold);
+      background-color: $primaryColor;
+      @include fontConfig(1.6rem, $primaryColor, bold);
       padding: 3px 14px;
-      border: 1px solid #fff;
+      border: 1px solid $primaryColor;
       border-radius: 4px;
       margin-right: 8px;
     }
@@ -306,12 +282,13 @@ tr {
 .iconEdit, .iconDelete {
   padding: 6px;
   color: #c0c000;
-  background-color: #fff;
-}
-.iconEdit:hover, .iconDelete:hover {
-  background-color: #f2f2f2;
-}
+  background-color: $primaryColor;
+  
+  &:hover {
+    background-color: #F2F2F2;
 
+  }
+}
 .iconDelete {
-  color: red;
+  color: #D30000;
 }
