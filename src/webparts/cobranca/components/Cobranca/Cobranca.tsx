@@ -40,8 +40,8 @@ function Cobranca (props: ICobrancaProps) {
   });
   const [action, setAction] = useState<number>(0); // 0 - add user ~~~ 1- edit user
 
+  const pageSize = 6;
   const [currentPage, setCurrentPage] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(6);
   const pages = Math.ceil(unfilteredClients.length/pageSize);
   const [currentClients, setCurrentClients] = useState<IPersonaProps[]>(null);
 
@@ -49,7 +49,7 @@ function Cobranca (props: ICobrancaProps) {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [])
 
   const loadData = async () => {
     const userAdmin = props.context.pageContext.user;
@@ -85,7 +85,7 @@ function Cobranca (props: ICobrancaProps) {
   const updateClient = async (data: IDataClient) => {
     if(data.Title == '' || data.Motivo == '' || data.situacao == '' ||  data.ImageUrl == '') return alert("Preencha todos os campos");
     const list = await sp.web.lists.getByTitle("Cobranças");
-    await list.items.getById(dataClient.Id).update({
+    await list.items.getById(client.Id).update({
       Title: data.Title,
       Motivo: data.Motivo,
       situacao: data.situacao,
@@ -95,14 +95,13 @@ function Cobranca (props: ICobrancaProps) {
     clearInput();
     setEditModal(!editModal);
   }
-  
 
   const formatDate = (date: string, count: number) => {
     const data = new Date(date);
     return data.toLocaleString().substr(0, count).replace(' ', ' às ');
   }
-  
-  const defineValueInput = (e: React.ChangeEvent<HTMLInputElement>) => setClient({ ...client, [e.target.name]: e.target.value })
+
+  const defineValueInput = (e: React.ChangeEvent<HTMLInputElement>) => setClient({ ...client, [e.target.name]: e.target.value });
 
   const handleModal = () => {
     setAction(0);
@@ -118,18 +117,18 @@ function Cobranca (props: ICobrancaProps) {
 
   const handleEditModal = (dataClient: IDataClient) => {
     setAction(1);
-    setDataClient(dataClient);
+    setClient(dataClient);
     setEditModal(!editModal);
   }
 
-  const handleFilterClients = (e) => {
+  const handleFilterClients = (e: any) => {
     const filtered = listDataClient.filter(item => (
       item.Title.toLowerCase().includes(e.target.value) || item.Motivo.toLowerCase().includes(e.target.value) || item.situacao.toLowerCase().includes(e.target.value)
     ));
     setUnfilteredClients(filtered);
   }
 
-  const handleFilterPerDate = (date) => {
+  const handleFilterPerDate = (date: Date) => {
     const filtered = listDataClient.filter(item => formatDate(item.Created, 10) === formatDate(date.toString(), 10));
     setUnfilteredClients(filtered);
   }
@@ -164,7 +163,7 @@ function Cobranca (props: ICobrancaProps) {
           <div className={styles.infoContainer}>
             <input autoComplete="off" id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={handleFilterClients} />
             <div className={styles.dateContainer}>
-              {< DatePickerBasicExample onSelectDate={(date) => handleFilterPerDate(date)}/>}
+              {< DatePickerBasicExample handleFilterPerDate={handleFilterPerDate}/>}
               <button onClick={() => {setUnfilteredClients(listDataClient)}}>Remover filtro</button>
             </div>
           </div>
@@ -201,10 +200,7 @@ function Cobranca (props: ICobrancaProps) {
                       <button onClick={() => {handleshowDeleteModal(dataClient)}}>
                         < Icon iconName="Delete" title="Excluir" aria-aria-label="Excluir" className={styles.iconDelete}/>
                       </button>
-                      <button onClick={() => {
-                        setClient({...client, Title: dataClient.Title, Motivo: dataClient.Motivo, situacao: dataClient.situacao})
-                        handleEditModal(dataClient)
-                      }}>
+                      <button onClick={() => handleEditModal(dataClient)}>
                         < Icon iconName="Edit" title="Editar" aria-label="Editar" className={styles.iconEdit} />
                       </button>
                     </div>

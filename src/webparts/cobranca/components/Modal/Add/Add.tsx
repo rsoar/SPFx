@@ -28,7 +28,7 @@ export const Add = ({clear, currentClient, client, handleModal, defineValueInput
         <button className={styles.closeModal} onClick={(e) => { handleModal(e), clear()}}>X</button>
         { action !== 0 ? <h1>Editar cliente</h1> : <h1>Adicionar novo cliente</h1> }
         <label>Nome do cliente:</label>
-        < PeoplePicker ariaLabel="Digite o nome do cliente" value={client.Title} onChange={async (peoples) => currentClient(peoples) }/>
+        < PeoplePicker ariaLabel="Digite o nome do cliente" onChange={async (peoples) => currentClient(peoples) }/>
         <label>Motivo:</label>
         <input className={styles.inpt} name="Motivo" type="text" placeholder="Motivo do atendimento" onChange={defineValueInput} value={client.Motivo} />
         <label>Situação:</label>
