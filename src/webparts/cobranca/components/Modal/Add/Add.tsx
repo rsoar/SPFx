@@ -11,7 +11,7 @@ import styles from './Modal.module.scss';
 
 interface IProps {
   client: IDataClient
-  handleModal: (dataClient) => void;
+  handleModal: (e: any) => void;
   defineValueInput: (e: any) => void;
   addClient: () => void;
   updateClient: (dataClient: IDataClient) => void;

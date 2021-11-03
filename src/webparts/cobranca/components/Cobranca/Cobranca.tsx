@@ -110,9 +110,9 @@ function Cobranca (props: ICobrancaProps) {
 
   const clearInput = () => setClient({...client, Title: '', Motivo: '', situacao: ''});
 
-  const handleshowDeleteModal = (clientID: IDataClient) => {
+  const handleshowDeleteModal = (client: IDataClient) => {
     setShowDeleteModal(!showDeleteModal);
-    setDataClient(clientID);
+    setDataClient(client);
   }
 
   const handleEditModal = (dataClient: IDataClient) => {
@@ -125,11 +125,6 @@ function Cobranca (props: ICobrancaProps) {
     const filtered = listDataClient.filter(item => (
       item.Title.toLowerCase().includes(e.target.value) || item.Motivo.toLowerCase().includes(e.target.value) || item.situacao.toLowerCase().includes(e.target.value)
     ));
-    setUnfilteredClients(filtered);
-  }
-
-  const handleFilterPerDate = (date: Date) => {
-    const filtered = listDataClient.filter(item => formatDate(item.Created, 10) === formatDate(date.toString(), 10));
     setUnfilteredClients(filtered);
   }
 
@@ -163,7 +158,7 @@ function Cobranca (props: ICobrancaProps) {
           <div className={styles.infoContainer}>
             <input autoComplete="off" id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={handleFilterClients} />
             <div className={styles.dateContainer}>
-              {< DatePickerBasicExample handleFilterPerDate={handleFilterPerDate}/>}
+              {< DatePickerBasicExample onSelectDate={date => setUnfilteredClients(listDataClient.filter(item => formatDate(item.Created, 10) === formatDate(date.toString(), 10)))} />}
               <button onClick={() => {setUnfilteredClients(listDataClient)}}>Remover filtro</button>
             </div>
           </div>
@@ -190,7 +185,7 @@ function Cobranca (props: ICobrancaProps) {
                   <td>
                     <div className={styles.tdCtn2}>
                       {formatDate(dataClient.Created, 10)}
-                      <span>Editado: {formatDate(dataClient.Modified, 16)}</span>
+                      <span>Editado por último: {formatDate(dataClient.Modified, 16)}</span>
                     </div>
                   </td>
                   <td>{dataClient.Motivo}</td>
