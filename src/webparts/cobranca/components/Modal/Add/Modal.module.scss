@@ -1,3 +1,13 @@
+$primaryColor: #FFF;
+$secondaryColor: #E4E4E4;
+$textPrimaryColor: #5A5A5AFF;
+
+@mixin flexConfig($direction, $justify, $align) {
+  display: flex;
+  justify-content: $justify;
+  align-items: $align;
+}
+
 h1 {
   text-transform: uppercase;
 }
@@ -9,9 +19,7 @@ h1 {
   left: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @include flexConfig(row, center, center)
 }
 
 .inpt {
@@ -19,13 +27,12 @@ h1 {
 }
 
 .modalContent{
+  @include flexConfig(column, none, none);
   position: relative;
   background-color: #f2f2f2;
   width: 50%;
   max-width: 650px;
   border-radius: 12px;
-  display: flex;
-  flex-direction: column;
   padding: 30px;
   font-size: 1.8rem;
   animation: modal 0.2s;
@@ -46,7 +53,7 @@ h1 {
   .addButton {
     margin-top: 10px;
     background-color: #007FFF;
-    color: #fff;
+    color: $primaryColor;
     border: none;
     padding: 8px 0px;
     border-radius: 12px;
@@ -64,7 +71,7 @@ h1 {
     border: none;
     background-color: red;
     font-weight: bold;
-    color: #fff;
+    color: $primaryColor;
     font-size: 1.4rem;
   }
 
@@ -80,7 +87,7 @@ h1 {
   padding: 4px 8px;
   border-radius: 8px;
   border: none;
-  background-color: #fff;
+  background-color: $primaryColor;
   font-weight: bold;
   color: rgb(184, 0, 0);
   font-size: 1.4rem;
@@ -94,13 +101,12 @@ h1 {
 }
 
 .paginationContainer {
-  display: flex;
-  flex-direction: row;
+  @include flexConfig(row, none, none);
   width: 100%;
 }
 .paginationButtons {
   padding: 3px 8px;
-  background-color: #fff;
+  background-color: $primaryColor;
   color: rgb(90, 90, 90);
   border: none;
   border-bottom: 1px solid #fff;
@@ -109,10 +115,10 @@ h1 {
   outline: none;
 }
 .paginationButtons:hover {
-  border-bottom: 1px solid rgb(90, 90, 90);
+  border-bottom: 1px solid $textPrimaryColor;
 }
 td {
-  border: 1px solid #e4e4e4;
+  border: 1px solid $secondaryColor;
 }
 
 @keyframes modal {
