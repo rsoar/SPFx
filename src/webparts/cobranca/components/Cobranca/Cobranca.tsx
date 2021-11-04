@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { useState, useEffect, useRef } from 'react';
 import styles from './Cobranca.module.scss';
+import modalStyles from '../Modal/Add/Modal.module.scss';
 
 import { sp } from "@pnp/sp";
 import "@pnp/sp/search";
@@ -9,6 +10,8 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import "@pnp/sp/site-users";
+
+import Tabela from '../Tabela/Tabela';
 
 import { IDataClient } from '../../Interface/IDataClient';
 import { ICobrancaProps } from './ICobrancaProps';
@@ -63,9 +66,11 @@ function Cobranca (props: ICobrancaProps): JSX.Element {
     setListPagination(allItems);
   }
 
+  const loadMore = (e: any) => setCurrentPage(e.target.value);
+
   const addClient = async () => {
     if(client.Title == '' || client.Motivo == '' || client.situacao == '' ||  client.ImageUrl == '') return alert("Preencha todos os campos");
-    currentClients.forEach(async (item: IPersonaProps) => {
+    await Promise.all(currentClients.map(async (item: IPersonaProps) => {
       await sp.web.lists.getByTitle("Cobranças").items.add({
         Title: item.text,
         Motivo: client.Motivo,
@@ -73,7 +78,8 @@ function Cobranca (props: ICobrancaProps): JSX.Element {
         ImageUrl: item.imageUrl
       });
       loadData();
-    })
+    }));
+
     clearInput();
     setShowAddModal(!showAddModal);
   }
@@ -138,6 +144,12 @@ function Cobranca (props: ICobrancaProps): JSX.Element {
     });
   }
 
+  const handleFilterDate = (date: Date) => {
+    const filtered = listDataClient.filter(item => formatDate(item.Created, 10) === formatDate(date.toString(), 10));
+    setUnfilteredClients(filtered);
+  }
+  
+
   return (
     <div className={styles.bgContainer}>
       <header>
@@ -153,68 +165,34 @@ function Cobranca (props: ICobrancaProps): JSX.Element {
         </div>
         <section className={styles.dataBox}>
           <p>Número de clientes cadastrados: {unfilteredClients !== null ? unfilteredClients.length : 0}</p>
-          <p>Clientes com situação <span className={styles.statusPending}>pendente</span>: {unfilteredClients !== null ? unfilteredClients.filter(data => data.situacao === 'Pendente').length : 0}</p>
-          <p>Clientes com situação <span className={styles.statusFinish}>finalizado</span>: {unfilteredClients !== null ? unfilteredClients.filter(data => data.situacao === 'Finalizado').length : 0}</p>
+          <p>Clientes com situação <span className={modalStyles.statusPending}>pendente</span>: {unfilteredClients !== null ? unfilteredClients.filter(data => data.situacao === 'Pendente').length : 0}</p>
+          <p>Clientes com situação <span className={modalStyles.statusFinish}>finalizado</span>: {unfilteredClients !== null ? unfilteredClients.filter(data => data.situacao === 'Finalizado').length : 0}</p>
         </section>
         <div className={styles.infoHeader}>
           <h2>Lista de clientes</h2>
           <div className={styles.infoContainer}>
             <input autoComplete="off" id="searchInput" className={styles.inputSearchClient} type="text" placeholder="Busca..." onChange={handleFilterClients} />
             <div className={styles.dateContainer}>
-              {< DatePickerBasicExample onSelectDate={date => setUnfilteredClients(listDataClient.filter(item => formatDate(item.Created, 10) === formatDate(date.toString(), 10)))} />}
+              {<DatePickerBasicExample onSelectDate={date => handleFilterDate(date)}/>}
               <button onClick={() => {setUnfilteredClients(listDataClient)}}>Remover filtro</button>
             </div>
           </div>
         </div>
-          {loading ? <div className={styles.loadbox}><div className={styles.loading}></div></div> : 
-          <>
-            <table>
-              <tr>
-                <th>Cliente</th>
-                <th>Data do registro</th>
-                <th>Motivo do contato</th>
-                <th>Situação</th>
-                <th>Ação</th>
-              </tr>
-            {unfilteredClients !== null && (
-              unfilteredClients.slice(currentPage * pageSize, currentPage * pageSize + pageSize).map(dataClient => (
-                <tr>
-                  <td>
-                     <div className={styles.tdCtn}>
-                        <img src={dataClient.ImageUrl} alt={dataClient.Title} />
-                        {dataClient.Title}
-                    </div>
-                  </td>
-                  <td>
-                    <div className={styles.tdCtn2}>
-                      {formatDate(dataClient.Created, 10)}
-                      <span>Editado por último: {formatDate(dataClient.Modified, 16)}</span>
-                    </div>
-                  </td>
-                  <td>{dataClient.Motivo}</td>
-                  { dataClient.situacao == 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
-                  <td>
-                    <div className={styles.tdCtn}>
-                      <button onClick={() => {handleShowDeleteModal(dataClient)}}>
-                        < Icon iconName="Delete" title="Excluir" aria-aria-label="Excluir" className={styles.iconDelete}/>
-                      </button>
-                      <button onClick={() => handleEditModal(dataClient)}>
-                        < Icon iconName="Edit" title="Editar" aria-label="Editar" className={styles.iconEdit} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )))}
-            </table>
-            <div className={styles.paginationContainer}>
-              { loading !== null && listDataClient !== null && (
-                Array.from(Array(pages), (item, index) => (
-                    <button className={styles.paginationButtons} value={index} onClick={(e: any) => setCurrentPage(e.target.value)}>{index + 1}</button>
-                ))) }
-            </div>
-          </>
-        }
-        {/* Modal add */}
+          {loading ? 
+            <div className={styles.loadbox}>
+              <div className={styles.loading}></div>
+            </div> : 
+            < Tabela 
+                unfilteredClients={unfilteredClients}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                pages={pages}
+                loading={loading}
+                editModal={handleEditModal}
+                deleteModal={handleShowDeleteModal}
+                formatDate={formatDate}
+                loadMore={loadMore}
+              /> }
         { showAddModal ? 
             < Add
               clear={clearInput}
@@ -228,10 +206,9 @@ function Cobranca (props: ICobrancaProps): JSX.Element {
               clientSelected={clientSelected}
             />
             : showAddModal }
-        {/* Modal delete */}
         { showDeleteModal ? 
-          <div className={styles.modalBackground}>
-            <div className={styles.modalContent}>
+          <div className={modalStyles.modalBackground}>
+            <div className={modalStyles.modalContent}>
               <h1>TEM CERTEZA QUE DESEJA EXCLUIR?</h1>
               <div>
                 <button onClick={() => setShowDeleteModal(!showDeleteModal)}>NÃO</button>
@@ -242,8 +219,7 @@ function Cobranca (props: ICobrancaProps): JSX.Element {
               </div>
             </div>
           </div>
-           : !showDeleteModal }
-        {/* Modal edit */}
+           : showDeleteModal }
         { showEditModal ?
             < Add 
               clear={clearInput}
