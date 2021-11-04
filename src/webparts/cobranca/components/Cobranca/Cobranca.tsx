@@ -22,16 +22,17 @@ import { IPersonaProps } from 'office-ui-fabric-react';
 import { Icon } from 'office-ui-fabric-react';
 import DatePickerBasicExample from '../Picker/DatePicker';
 
-function Cobranca (props: ICobrancaProps) {
+function Cobranca (props: ICobrancaProps): JSX.Element {
 
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [editModal, setEditModal] = useState<boolean>(false);
-  const [dataClient, setDataClient] = useState<IDataClient>(null);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
 
   const [adminData, setAdminData] = useState<IDataAdmin>();
-  const [listDataClient, setListDataClient] = useState<IDataClient[]>([]);
-  const [unfilteredClients, setUnfilteredClients] = useState<IDataClient[]>([]);
+  const [listDataClient, setListDataClient] = useState<IDataClient[]>(null);
+  const [unfilteredClients, setUnfilteredClients] = useState<IDataClient[]>(null);
+  const [listPagination, setListPagination] = useState<IDataClient[]>([]);
+  const [clientSelected, setClientSelected] = useState<IPersonaProps>(null);
   const [client, setClient] = useState<IDataClient>({
     Title: '',
     Motivo: '',
@@ -42,7 +43,8 @@ function Cobranca (props: ICobrancaProps) {
 
   const pageSize = 6;
   const [currentPage, setCurrentPage] = useState<number>(0);
-  const pages = Math.ceil(unfilteredClients.length/pageSize);
+  const pages = Math.ceil(listPagination.length/pageSize);
+
   const [currentClients, setCurrentClients] = useState<IPersonaProps[]>(null);
 
   const loading = unfilteredClients === null;
@@ -58,9 +60,8 @@ function Cobranca (props: ICobrancaProps) {
     setAdminData(userAdmin);
     setListDataClient(allItems);
     setUnfilteredClients(allItems);
+    setListPagination(allItems);
   }
-
-  const loadMore = (e: any) => setCurrentPage(e.target.value);
 
   const addClient = async () => {
     if(client.Title == '' || client.Motivo == '' || client.situacao == '' ||  client.ImageUrl == '') return alert("Preencha todos os campos");
@@ -93,7 +94,7 @@ function Cobranca (props: ICobrancaProps) {
     });
     loadData();
     clearInput();
-    setEditModal(!editModal);
+    setShowEditModal(!showEditModal);
   }
 
   const formatDate = (date: string, count: number) => {
@@ -110,15 +111,16 @@ function Cobranca (props: ICobrancaProps) {
 
   const clearInput = () => setClient({...client, Title: '', Motivo: '', situacao: ''});
 
-  const handleshowDeleteModal = (client: IDataClient) => {
+  const handleShowDeleteModal = (client: IDataClient) => {
     setShowDeleteModal(!showDeleteModal);
-    setDataClient(client);
+    setClient(client);
   }
 
   const handleEditModal = (dataClient: IDataClient) => {
     setAction(1);
-    setClient(dataClient);
-    setEditModal(!editModal);
+    setClient({...client, Title: dataClient.Title, Motivo: dataClient.Motivo, situacao: dataClient.situacao, Modified: dataClient.Modified, ImageUrl: dataClient.ImageUrl, Id: dataClient.Id});
+    setShowEditModal(!showEditModal);
+    setClientSelected({...clientSelected, text: dataClient.Title, imageUrl: dataClient.ImageUrl, secondaryText: dataClient.secondaryText});
   }
 
   const handleFilterClients = (e: any) => {
@@ -126,6 +128,7 @@ function Cobranca (props: ICobrancaProps) {
       item.Title.toLowerCase().includes(e.target.value) || item.Motivo.toLowerCase().includes(e.target.value) || item.situacao.toLowerCase().includes(e.target.value)
     ));
     setUnfilteredClients(filtered);
+    setListPagination(filtered);
   }
 
   const currentClient = (clients: IPersonaProps[]) => {
@@ -149,9 +152,9 @@ function Cobranca (props: ICobrancaProps) {
           <a href="#" onClick={handleModal}>NOVO CLIENTE</a>
         </div>
         <section className={styles.dataBox}>
-          <p>Número de clientes cadastrados: {listDataClient.length}</p>
-          <p>Clientes com situação <span className={styles.statusPending}>pendente</span>: {listDataClient.filter(data => data.situacao === 'Pendente').length}</p>
-          <p>Clientes com situação <span className={styles.statusFinish}>finalizado</span>: {listDataClient.filter(data => data.situacao === 'Finalizado').length}</p>
+          <p>Número de clientes cadastrados: {unfilteredClients !== null ? unfilteredClients.length : 0}</p>
+          <p>Clientes com situação <span className={styles.statusPending}>pendente</span>: {unfilteredClients !== null ? unfilteredClients.filter(data => data.situacao === 'Pendente').length : 0}</p>
+          <p>Clientes com situação <span className={styles.statusFinish}>finalizado</span>: {unfilteredClients !== null ? unfilteredClients.filter(data => data.situacao === 'Finalizado').length : 0}</p>
         </section>
         <div className={styles.infoHeader}>
           <h2>Lista de clientes</h2>
@@ -192,7 +195,7 @@ function Cobranca (props: ICobrancaProps) {
                   { dataClient.situacao == 'Finalizado' ? <td className={styles.statusFinish}>{dataClient.situacao}</td> : <td className={styles.statusPending}>{dataClient.situacao}</td> }
                   <td>
                     <div className={styles.tdCtn}>
-                      <button onClick={() => {handleshowDeleteModal(dataClient)}}>
+                      <button onClick={() => {handleShowDeleteModal(dataClient)}}>
                         < Icon iconName="Delete" title="Excluir" aria-aria-label="Excluir" className={styles.iconDelete}/>
                       </button>
                       <button onClick={() => handleEditModal(dataClient)}>
@@ -204,16 +207,27 @@ function Cobranca (props: ICobrancaProps) {
               )))}
             </table>
             <div className={styles.paginationContainer}>
-              { Array.from(Array(pages), (item, index) => (
-                <div>
-                  <button className={styles.paginationButtons} value={index} onClick={(e) => loadMore(e)}>{index + 1}</button>
-                </div>
-              )) }
+              { loading !== null && listDataClient !== null && (
+                Array.from(Array(pages), (item, index) => (
+                    <button className={styles.paginationButtons} value={index} onClick={(e: any) => setCurrentPage(e.target.value)}>{index + 1}</button>
+                ))) }
             </div>
           </>
         }
         {/* Modal add */}
-        { showAddModal ? < Add clear={clearInput} currentClient={currentClient} action={action} client={client} handleModal={handleModal} defineValueInput={defineValueInput} addClient={addClient} updateClient={updateClient}/> : showAddModal }
+        { showAddModal ? 
+            < Add
+              clear={clearInput}
+              currentClient={currentClient}
+              action={action}
+              client={client}
+              handleModal={handleModal}
+              defineValueInput={defineValueInput}
+              addClient={addClient}
+              updateClient={updateClient}
+              clientSelected={clientSelected}
+            />
+            : showAddModal }
         {/* Modal delete */}
         { showDeleteModal ? 
           <div className={styles.modalBackground}>
@@ -223,15 +237,26 @@ function Cobranca (props: ICobrancaProps) {
                 <button onClick={() => setShowDeleteModal(!showDeleteModal)}>NÃO</button>
                 <button onClick={() =>{
                   setShowDeleteModal(!showDeleteModal);
-                  deleteClient(dataClient);
+                  deleteClient(client);
                 }}>SIM</button>
               </div>
             </div>
           </div>
            : !showDeleteModal }
         {/* Modal edit */}
-        { editModal ? < Add clear={clearInput} currentClient={currentClient} action={action} client={client} handleModal={handleEditModal} defineValueInput={defineValueInput} addClient={addClient} updateClient={updateClient}/> 
-        : editModal }
+        { showEditModal ?
+            < Add 
+              clear={clearInput}
+              currentClient={currentClient}
+              action={action}
+              client={client}
+              handleModal={handleEditModal}
+              defineValueInput={defineValueInput}
+              addClient={addClient}
+              updateClient={updateClient}
+              clientSelected={clientSelected}
+            /> 
+          : showEditModal }
       </main>
     </div>
   )

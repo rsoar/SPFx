@@ -6,7 +6,6 @@ import { IDataClient } from '../../../Interface/IDataClient';
 import PeoplePicker from '../../Picker/PeoplePicker';
 import { IPersonaProps } from 'office-ui-fabric-react';
 
-
 import styles from './Modal.module.scss';
 
 interface IProps {
@@ -18,17 +17,28 @@ interface IProps {
   action: number;
   currentClient: (clients: IPersonaProps[]) => void;
   clear: () => void;
+  clientSelected: IPersonaProps;
 }
 
-export const Add = ({clear, currentClient, client, handleModal, defineValueInput, addClient, updateClient, action}: IProps) => {
+export const Add = ({clear, currentClient, client, handleModal, defineValueInput, addClient, updateClient, action, clientSelected}: IProps): JSX.Element => {
 
   return(
     <div className={styles.modalBackground}>
       <div className={styles.modalContent}>
-        <button className={styles.closeModal} onClick={(e) => { handleModal(e), clear()}}>X</button>
+        <button className={styles.closeModal} onClick={(e: any) => { handleModal(e), clear()}}>X</button>
         { action !== 0 ? <h1>Editar cliente</h1> : <h1>Adicionar novo cliente</h1> }
-        <label>Nome do cliente:</label>
-        < PeoplePicker ariaLabel="Digite o nome do cliente" onChange={async (peoples) => currentClient(peoples) }/>
+        <label>Cliente:</label>
+        { action !== 0 ? 
+          < PeoplePicker 
+            defaultSelectedItems={[clientSelected]}
+            ariaLabel="Digite o nome do cliente"
+            onChange={async (peoples: IPersonaProps[]) => currentClient(peoples)}
+          /> 
+          : < PeoplePicker 
+              ariaLabel="Digite o nome do cliente"
+              onChange={async (peoples: IPersonaProps[]) => currentClient(peoples)}
+            />
+        }
         <label>Motivo:</label>
         <input className={styles.inpt} name="Motivo" type="text" placeholder="Motivo do atendimento" onChange={defineValueInput} value={client.Motivo} />
         <label>Situação:</label>
@@ -37,7 +47,10 @@ export const Add = ({clear, currentClient, client, handleModal, defineValueInput
           <option value="Pendente">Em aberto</option>
           <option value="Finalizado">Finalizado</option>
         </select>
-        {action !== 0 ? <button className={styles.addButton} onClick={() => updateClient(client)}>ATUALIZAR</button> : <button className={styles.addButton} onClick={addClient}>ADICIONAR</button> }
+        { action !== 0 ?
+          <button className={styles.addButton} onClick={() => updateClient(client)}>ATUALIZAR</button> : 
+          <button className={styles.addButton} onClick={addClient}>ADICIONAR</button>
+        }
       </div>
     </div>
   )

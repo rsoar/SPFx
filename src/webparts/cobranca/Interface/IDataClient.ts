@@ -6,4 +6,5 @@ export interface IDataClient {
   Created?: string;
   Modified?: string;
   ImageUrl?: string;
+  secondaryText?: string;
 }
